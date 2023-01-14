@@ -11,7 +11,6 @@ import "src/interfaces/IRender.sol";
 
 contract DeployScript is Script {
     Connector connector;
-
     address render;
     uint256 gameId;
 

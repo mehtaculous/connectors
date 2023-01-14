@@ -11,17 +11,15 @@ import "src/interfaces/IConnector.sol";
 contract Connector is IConnector, ERC721, ERC721Holder, Ownable {
     using Strings for uint160;
     using Strings for uint256;
-    /// @dev Maximum number of games won
-    uint256 constant MAX_SUPPLY = 100;
-    /// @dev Minimum number of moves required to check for winner
-    uint256 constant MIN_MOVES = 7;
+    /// @dev Maximum number of possible games won
+    uint256 public constant MAX_SUPPLY = 100;
     /// @notice Address of Metadata contract
     address public immutable metadata;
     /// @notice Current game ID
     uint256 public currentId;
     /// @notice Ether amount required to challenge or begin game
     uint256 public fee;
-    /// @notice Current supply of games won
+    /// @notice Current number of games won
     uint256 public totalSupply;
     /// @notice Mapping of game ID to game info
     mapping(uint256 => Game) public games;
@@ -114,8 +112,8 @@ contract Connector is IConnector, ERC721, ERC721Holder, Ownable {
         // Emits event for creating new move on board
         emit Move(_gameId, msg.sender, moves, _row, _col);
 
-        // Checks game result only if total moves is greater than 7
-        if (moves >= MIN_MOVES) {
+        // Checks if minimum number of moves for possible win has been made
+        if (moves >= 7) {
             // Checks horizontal placement of move
             result = _checkHorizontal(msg.sender, _col, _row, board);
             // Checks vertical placement of move

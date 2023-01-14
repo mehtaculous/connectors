@@ -58,6 +58,8 @@ interface IConnector {
         address[COL][ROW] _board
     );
 
+    function MAX_SUPPLY() external view returns (uint256);
+
     function challenge(address _opponent) external payable;
 
     function currentId() external view returns (uint256);

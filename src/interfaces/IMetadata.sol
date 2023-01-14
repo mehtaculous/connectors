@@ -16,8 +16,6 @@ interface IMetadata {
 
     function YELLOW() external view returns (string memory);
 
-    function renders(uint256) external view returns (string memory, string memory, string memory);
-
     function generateBase(string memory _base) external pure returns (string memory);
 
     function generateBoard() external pure returns (string memory);
@@ -41,4 +39,6 @@ interface IMetadata {
     function getStatus(State _state) external view returns (string memory status);
 
     function register(uint256 _gameId) external;
+
+    function renders(uint256) external view returns (string memory, string memory, string memory);
 }

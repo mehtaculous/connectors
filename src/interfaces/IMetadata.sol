@@ -3,22 +3,20 @@ pragma solidity 0.8.13;
 
 import {COL, ROW, State} from "src/interfaces/IConnector.sol";
 
-struct Display {
+struct Render {
     string base;
     string player1;
     string player2;
 }
 
-interface IRender {
+interface IMetadata {
     function BLUE() external view returns (string memory);
 
     function RED() external view returns (string memory);
 
     function YELLOW() external view returns (string memory);
 
-    function displays(
-        uint256
-    ) external view returns (string memory base, string memory player1, string memory player2);
+    function renders(uint256) external view returns (string memory, string memory, string memory);
 
     function generateBase(string memory _base) external pure returns (string memory);
 
@@ -38,9 +36,7 @@ interface IRender {
         address[COL][ROW] memory _board
     ) external view returns (string memory svg);
 
-    function getChecker(
-        uint256 _gameId
-    ) external view returns (string memory checker1, string memory checker2);
+    function getChecker(uint256 _gameId) external view returns (string memory, string memory);
 
     function getStatus(State _state) external view returns (string memory status);
 

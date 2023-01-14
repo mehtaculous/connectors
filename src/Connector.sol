@@ -5,21 +5,21 @@ import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/utils/ERC721Holder.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
-import "src/Render.sol";
+import "src/Metadata.sol";
 import "src/interfaces/IConnector.sol";
 
 contract Connector is IConnector, ERC721, ERC721Holder, Ownable {
     using Strings for uint160;
     using Strings for uint256;
 
-    address public immutable render;
+    address public immutable metadata;
     uint256 public currentId;
     uint256 public fee;
     uint256 public totalSupply;
     mapping(uint256 => Game) public games;
 
     constructor() payable ERC721("Connector", "C4") {
-        render = address(new Render());
+        metadata = address(new Metadata());
     }
 
     function challenge(address _opponent) external payable {
@@ -31,13 +31,14 @@ contract Connector is IConnector, ERC721, ERC721Holder, Ownable {
         game.player2 = _opponent;
         game.turn = _opponent;
 
-        IRender(render).register(currentId);
+        IMetadata(metadata).register(currentId);
         _safeMint(address(this), currentId);
 
         emit Challenge(currentId, msg.sender, _opponent);
     }
 
     function begin(uint256 _gameId, uint256 _row, uint256 _col) external payable {
+        if (_gameId == 0 || _gameId > currentId) revert InvalidGame();
         Game storage game = games[_gameId];
         if (msg.value != fee / 2) revert InvalidPayment();
         if (State.INACTIVE != game.state) revert InvalidState();
@@ -62,14 +63,14 @@ contract Connector is IConnector, ERC721, ERC721Holder, Ownable {
         if (game.turn != msg.sender) revert InvalidTurn();
         if (board[_row][_col] != address(0) || (_row > 0 && board[_row - 1][_col] == address(0)))
             revert InvalidMove();
-        if (_row >= ROW || _col >= COL) revert InvalidPlacement();
 
         ++game.moves;
         uint256 moves = game.moves;
         board[_row][_col] = msg.sender;
+
         emit Move(_gameId, msg.sender, moves, _row, _col);
 
-        if (moves >= 7) {
+        if (moves >= MIN_MOVES) {
             result = _checkHorizontal(msg.sender, _col, _row, board);
             if (result == Strat.NONE) result = _checkVertical(msg.sender, _row, _col, board);
             if (result == Strat.NONE) result = _checkAscending(msg.sender, _row, _col, board);
@@ -79,10 +80,9 @@ contract Connector is IConnector, ERC721, ERC721Holder, Ownable {
         if (result != Strat.NONE) {
             game.strat = result;
             game.state = State.SUCCESS;
-            game.winner = msg.sender;
-            emit Result(_gameId, game.winner, game.state, game.strat, board);
+            emit Result(_gameId, game.turn, game.state, game.strat, board);
 
-            if (totalSupply < 100) {
+            if (totalSupply < MAX_SUPPLY) {
                 ++totalSupply;
                 safeTransferFrom(address(this), msg.sender, _gameId);
             }
@@ -91,6 +91,8 @@ contract Connector is IConnector, ERC721, ERC721Holder, Ownable {
 
             if (moves == ROW * COL) {
                 game.state = State.DRAW;
+                game.turn = address(0);
+
                 emit Result(_gameId, address(0), game.state, game.strat, board);
             }
         }
@@ -114,14 +116,14 @@ contract Connector is IConnector, ERC721, ERC721Holder, Ownable {
         address player2 = game.player2;
         string memory name = string.concat("Connector #", _tokenId.toString());
         string memory description = "Just a friendly on-chain game of Connect Four.";
-        string memory image = IRender(render).generateSVG(_tokenId, player1, player2, board);
+        string memory image = IMetadata(metadata).generateSVG(_tokenId, player1, player2, board);
         string memory playerTraits = getPlayerTraits(_tokenId, player1, player2);
         string memory gameTraits = getGameTraits(game);
 
         return
             string(
                 abi.encodePacked(
-                    'data:application/json;utf8,',
+                    "data:application/json;utf8,",
                     '{"name":"',
                         name,
                     '",',
@@ -134,7 +136,7 @@ contract Connector is IConnector, ERC721, ERC721Holder, Ownable {
                     '"attributes": [',
                         playerTraits,
                         gameTraits,
-                    ']}'
+                    "]}"
                 )
             );
     }
@@ -146,41 +148,45 @@ contract Connector is IConnector, ERC721, ERC721Holder, Ownable {
     ) public view returns (string memory) {
         string memory player1 = uint160(_player1).toHexString(20);
         string memory player2 = uint160(_player2).toHexString(20);
-        (string memory checker1, string memory checker2) = IRender(render).getChecker(_tokenId);
+        (string memory checker1, string memory checker2) = IMetadata(metadata).getChecker(_tokenId);
 
         return
             string(
                 abi.encodePacked(
-                    '{"trait_type":"', checker1,
-                    '", "value":"', _substring(player1),
+                    '{"trait_type":"',
+                        checker1,
+                    '", "value":"',
+                        _substring(player1),
                     '"},',
-                    '{"trait_type":"', checker2,
-                    '", "value":"', _substring(player2),
+                    '{"trait_type":"',
+                        checker2,
+                    '", "value":"',
+                        _substring(player2),
                     '"},'
                 )
             );
     }
 
     function getGameTraits(Game memory _game) public view returns (string memory) {
+        address winner = (_game.state == State.SUCCESS) ? _game.turn : address(0);
         string memory moves = _game.moves.toString();
-        string memory status = IRender(render).getStatus(_game.state);
+        string memory status = IMetadata(metadata).getStatus(_game.state);
         string memory turn = uint160(_game.turn).toHexString(20);
-        string memory winner = uint160(_game.winner).toHexString(20);
+        string memory label = (winner != address(0)) ? "Winner" : "Turn";
 
         return
             string(
                 abi.encodePacked(
-                    '{"trait_type":"Turn", "value":"',
-                        _substring(turn),
-                    '"},',
                     '{"trait_type":"Moves", "value":"',
                         moves,
                     '"},',
                     '{"trait_type":"Status", "value":"',
                         status,
                     '"},',
-                    '{"trait_type":"Winner", "value":"',
-                        _substring(winner),
+                    '{"trait_type":"',
+                        label,
+                    '", "value":"',
+                        _substring(turn),
                     '"}'
                 )
             );

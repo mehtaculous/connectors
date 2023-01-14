@@ -5,13 +5,13 @@ import "forge-std/Script.sol";
 import "forge-std/Test.sol";
 
 import "src/Connector.sol";
-import "src/Render.sol";
+import "src/Metadata.sol";
 import "src/interfaces/IConnector.sol";
-import "src/interfaces/IRender.sol";
+import "src/interfaces/IMetadata.sol";
 
 contract DeployScript is Script {
     Connector connector;
-    address render;
+    address metadata;
     uint256 gameId;
 
     function setUp() public {
@@ -22,6 +22,6 @@ contract DeployScript is Script {
 
     function run() public {
         connector = new Connector();
-        render = connector.render();
+        metadata = connector.metadata();
     }
 }

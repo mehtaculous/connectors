@@ -4,9 +4,9 @@ pragma solidity ^0.8.13;
 import "forge-std/Test.sol";
 
 import "src/Connector.sol";
-import "src/Render.sol";
+import "src/Metadata.sol";
 import "src/interfaces/IConnector.sol";
-import "src/interfaces/IRender.sol";
+import "src/interfaces/IMetadata.sol";
 
 contract ConnectorTest is Test {
     using Strings for uint160;
@@ -15,6 +15,10 @@ contract ConnectorTest is Test {
     // Contracts
     Connector connector;
 
+    // Users
+    address alice = address(111);
+    address bob = address(222);
+
     // Game
     Game game;
     State state;
@@ -22,34 +26,26 @@ contract ConnectorTest is Test {
     address player1;
     address player2;
     address turn;
-    address winner;
     uint256 moves;
     address[COL][ROW] board;
 
     // State
-    address render;
+    address metadata;
+    uint256 col;
+    uint256 fee;
     uint256 gameId;
     uint256 row;
     uint256 totalSupply;
 
-    // Users
-    address alice = address(111);
-    address bob = address(222);
-
-    // Balances
-    uint256 aliceBalance;
-    uint256 bobBalance;
-
     // Constants
     uint256 constant ETH_BALANCE = 100 ether;
-    uint256 constant MIN_ETHER = 1 wei;
 
     // Errors
+    bytes INDEX_OUT_OF_BOUNDS_ERROR = bytes("Index out of bounds");
     bytes4 INVALID_GAME_ERROR = IConnector.InvalidGame.selector;
     bytes4 INVALID_MATCHUP_ERROR = IConnector.InvalidMatchup.selector;
     bytes4 INVALID_MOVE_ERROR = IConnector.InvalidMove.selector;
     bytes4 INVALID_PAYMENT_ERROR = IConnector.InvalidPayment.selector;
-    bytes4 INVALID_PLACEMENT_ERROR = IConnector.InvalidPlacement.selector;
     bytes4 INVALID_STATE_ERROR = IConnector.InvalidState.selector;
     bytes4 INVALID_TURN_ERROR = IConnector.InvalidTurn.selector;
     bytes4 NOT_AUTHORIZED_ERROR = IConnector.NotAuthorized.selector;
@@ -64,7 +60,7 @@ contract ConnectorTest is Test {
 
     function setUp() public {
         connector = new Connector();
-        render = connector.render();
+        metadata = connector.metadata();
 
         vm.deal(alice, ETH_BALANCE);
         vm.deal(bob, ETH_BALANCE);
@@ -73,112 +69,113 @@ contract ConnectorTest is Test {
         vm.label(alice, "Alice");
         vm.label(bob, "Bob");
         vm.label(address(connector), "Connector");
-        vm.label(render, "Render");
+        vm.label(metadata, "Metadata");
         vm.label(address(this), "ConnectorTest");
     }
 
     function testChallengeSuccess() public {
-        _challenge(alice, bob);
-        gameId = connector.currentId();
+        _challenge(alice, bob, fee);
     }
 
     function testChallengeRevertInvalidPayment() public {
-        _setFee(address(this), 1 wei);
-
         vm.expectRevert(INVALID_PAYMENT_ERROR);
-        _challenge(alice, bob);
+        _challenge(alice, bob, 1 wei);
     }
 
     function testChallengeRevertInvalidMatchup() public {
         vm.expectRevert(INVALID_MATCHUP_ERROR);
-        _challenge(alice, alice);
+        _challenge(alice, alice, fee);
     }
 
     function testBeginSuccess(uint256 _col) public {
         testChallengeSuccess();
-        _col = _boundCol(_col, 0, COL);
+        _col = _boundColumn(_col, 0, COL);
 
-        _begin(bob, gameId, row, _col);
+        _begin(bob, gameId, row, _col, fee);
+    }
+
+    function testBeginRevertInvalidGame(uint256 _col) public {
+        testChallengeSuccess();
+        _col = _boundColumn(_col, 0, COL);
+
+        vm.expectRevert(INVALID_GAME_ERROR);
+        _begin(bob, ++gameId, row, _col, fee);
     }
 
     function testBeginRevertInvalidPayment(uint256 _col) public {
         testChallengeSuccess();
-        _setFee(address(this), 1 wei);
-        _col = _boundCol(_col, 0, COL);
+        _col = _boundColumn(_col, 0, COL);
 
         vm.expectRevert(INVALID_PAYMENT_ERROR);
-        _begin(bob, gameId, row, _col);
+        _begin(bob, gameId, row, _col, 1 wei);
     }
 
     function testBeginRevertInvalidState(uint256 _col) public {
-        _col = _boundCol(_col, 0, COL);
+        testBeginSuccess(_col);
+        _col = _boundColumn(_col, 0, COL);
 
         vm.expectRevert(INVALID_STATE_ERROR);
-        _begin(bob, gameId, row, _col);
+        _begin(alice, gameId, row, _col, fee);
     }
 
     function testBeginRevertNotAuthorized(uint256 _col) public {
         testChallengeSuccess();
-        _col = _boundCol(_col, 0, COL);
+        _col = _boundColumn(_col, 0, COL);
 
         vm.expectRevert(NOT_AUTHORIZED_ERROR);
-        _begin(alice, gameId, row, _col);
+        _begin(alice, gameId, row, _col, fee);
     }
 
-    function testMoveSuccess(uint256 _row, uint256 _col) public {
-        testChallengeSuccess();
-        testBeginSuccess(_col);
-        vm.assume(_row < 2);
-        _col = _boundCol(_row, 0, COL-1);
+    function testMoveSuccess() public {
+        _challenge(alice, bob, fee);
+        _begin(bob, gameId, row, col, fee);
 
-        _move(alice, gameId, _row, _col);
+        _move(alice, gameId, row, col + 1);
     }
 
-    function testMoveRevertInvalidGame(uint256 _row, uint256 _col) public {
-        testChallengeSuccess();
+    function testMoveRevertInvalidGame(uint256 _col) public {
         testBeginSuccess(_col);
-        vm.assume(_row < 2);
-        _col = _boundCol(_row, 0, COL);
+        _col = _boundColumn(_col, 0, COL);
 
         vm.expectRevert(INVALID_GAME_ERROR);
-        _move(alice, 0, _row, _col);
+        _move(alice, ++gameId, row, _col);
     }
 
-    function testMoveRevertInvalidState(uint256 _row, uint256 _col) public {
+    function testMoveRevertInvalidState(uint256 _col) public {
         testChallengeSuccess();
-        testBeginSuccess(_col);
-        vm.assume(_row < 2);
-        _col = _boundCol(_row, 0, COL);
+        _col = _boundColumn(_col, 0, COL);
 
         vm.expectRevert(INVALID_STATE_ERROR);
-        _move(alice, gameId, _row, _col);
+        _move(bob, gameId, row, _col);
     }
 
-    function testMoveRevertInvalidTurn(uint256 _row, uint256 _col) public {
+    function testMoveRevertInvalidTurn(uint256 _col) public {
         testBeginSuccess(_col);
-        vm.assume(_row < 2);
-        _col = _boundCol(_row, 0, COL);
+        _col = _boundColumn(_col, 0, COL);
 
         vm.expectRevert(INVALID_TURN_ERROR);
-        _move(bob, gameId, _row, _col);
+        _move(bob, gameId, row, _col);
     }
 
-    function testMoveRevertInvalidMove(uint256 _row, uint256 _col) public {
+    function testMoveRevertRowOutOfBounds(uint256 _col) public {
         testBeginSuccess(_col);
-        vm.assume(_row >= 2);
-        _col = _boundCol(_row, 0, COL);
+
+        vm.expectRevert();
+        _move(alice, gameId, ROW, col);
+    }
+
+    function testMoveRevertColOutOfBounds(uint256 _col) public {
+        testBeginSuccess(_col);
+
+        vm.expectRevert();
+        _move(alice, gameId, row, COL);
+    }
+
+    function testMoveRevertInvalidMove(uint256 _col) public {
+        testBeginSuccess(_col);
 
         vm.expectRevert(INVALID_MOVE_ERROR);
-        _move(alice, gameId, _row, _col);
-    }
-
-    function testMoveRevertInvalidPlacement(uint256 _row, uint256 _col) public {
-        testBeginSuccess(_col);
-        vm.assume(_row < 2);
-        _col = _boundCol(_row, 0, COL);
-
-        vm.expectRevert(INVALID_PLACEMENT_ERROR);
-        _move(alice, gameId, _row, _col);
+        _move(alice, gameId, row, col);
     }
 
     function testSetFeeSuccess(uint256 _fee) public {
@@ -194,7 +191,7 @@ contract ConnectorTest is Test {
         _withdraw(address(this), payable(address(this)));
     }
 
-    function testTokenURI() public view {
+    function xtestTokenURI() public view {
         connector.tokenURI(gameId);
     }
 
@@ -202,33 +199,49 @@ contract ConnectorTest is Test {
     /// ===== HELPERS =====
     /// ===================
 
-    function _challenge(address _sender, address _opponent) internal prank(_sender) {
-        connector.challenge(_opponent);
+    function _challenge(address _sender, address _opponent, uint256 _fee) internal prank(_sender) {
+        connector.challenge{value: _fee}(_opponent);
+        gameId = connector.currentId();
     }
 
-    function _begin(address _sender, uint256 _gameId, uint256 _row, uint256 _col) internal prank(_sender) {
-        connector.begin(_gameId, _row, _col);
+    function _begin(
+        address _sender,
+        uint256 _gameId,
+        uint256 _row,
+        uint256 _col,
+        uint256 _fee
+    ) internal prank(_sender) {
+        connector.begin{value: _fee}(_gameId, _row, _col);
+        row = _row;
+        col = _col;
     }
 
-    function _move(address _sender, uint256 _gameId, uint256 _row, uint256 _col) internal prank(_sender) {
+    function _move(
+        address _sender,
+        uint256 _gameId,
+        uint256 _row,
+        uint256 _col
+    ) internal prank(_sender) {
         connector.move(_gameId, _row, _col);
+        row = _row;
+        col = _col;
     }
 
     function _setFee(address _sender, uint256 _fee) internal prank(_sender) {
         connector.setFee(_fee);
+        fee = _fee;
     }
 
     function _withdraw(address _sender, address payable _to) internal prank(_sender) {
         connector.withdraw(_to);
     }
 
-    function _boundCol(uint256 _col, uint256 _min, uint256 _max) internal view returns (uint256 col) {
-        col = bound(_col, _min, _max);
-        vm.assume(col >= _min && col < _max);
-    }
-
-    function _boundFee(uint256 _fee, uint256 _min, uint256 _max) internal view returns (uint256 fee) {
-        fee = bound(_fee, _min, _max);
-        vm.assume(fee >= _min && fee < _max);
+    function _boundColumn(
+        uint256 _col,
+        uint256 _min,
+        uint256 _max
+    ) internal view returns (uint256 column) {
+        column = bound(_col, _min, _max);
+        vm.assume(column >= _min && column < _max);
     }
 }

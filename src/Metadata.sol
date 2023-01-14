@@ -4,22 +4,24 @@ pragma solidity 0.8.13;
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 
-import "src/interfaces/IRender.sol";
+import "src/interfaces/IMetadata.sol";
 
-contract Render is IRender, Ownable {
+contract Metadata is IMetadata, Ownable {
     using Strings for uint256;
+
     string public constant BLUE = "#29335c";
     string public constant RED = "#DB2B39";
     string public constant YELLOW = "#F3A712";
-
     string[] public palette = [YELLOW, BLUE, RED];
-    mapping(uint256 => Display) public displays;
+    mapping(uint256 => Render) public renders;
+
+    constructor() payable {}
 
     function register(uint256 _gameId) external onlyOwner {
-        Display storage display = displays[_gameId];
-        display.base = palette[_gameId - (1 % 3)];
-        display.player1 = palette[(_gameId) % 3];
-        display.player2 = palette[(_gameId + 1) % 3];
+        Render storage render = renders[_gameId];
+        render.base = palette[_gameId - (1 % 3)];
+        render.player1 = palette[(_gameId) % 3];
+        render.player2 = palette[(_gameId + 1) % 3];
     }
 
     function generateSVG(
@@ -28,19 +30,19 @@ contract Render is IRender, Ownable {
         address _player2,
         address[COL][ROW] memory _board
     ) external view returns (string memory svg) {
-        Display memory display = displays[_gameId];
+        Render memory render = renders[_gameId];
         string memory board = generateBoard();
 
         for (uint256 y; y < COL; ++y) {
             board = string.concat(board, generateGrid(y));
             for (uint256 x; x < ROW; ++x) {
                 if (_board[x][y] == _player1) {
-                    board = string.concat(board, generateCell(x, display.player1));
+                    board = string.concat(board, generateCell(x, render.player1));
                 } else if (_board[x][y] == _player2) {
-                    board = string.concat(board, generateCell(x, display.player2));
+                    board = string.concat(board, generateCell(x, render.player2));
                 }
             }
-            board = string.concat(board, generateBase(display.base));
+            board = string.concat(board, generateBase(render.base));
         }
 
         svg = string.concat(board, "</svg>");
@@ -85,6 +87,14 @@ contract Render is IRender, Ownable {
         return string(abi.encodePacked(cell[0], cell[1], cell[2], cell[3], cell[4]));
     }
 
+    function getChecker(
+        uint256 _gameId
+    ) external view returns (string memory checker1, string memory checker2) {
+        Render memory render = renders[_gameId];
+        checker1 = _checkColor(render.player1);
+        checker2 = _checkColor(render.player2);
+    }
+
     function getStatus(State _state) external pure returns (string memory status) {
         if (_state == State.INACTIVE) {
             status = "Inactive";
@@ -97,15 +107,7 @@ contract Render is IRender, Ownable {
         }
     }
 
-    function getChecker(
-        uint256 _gameId
-    ) external view returns (string memory checker1, string memory checker2) {
-        Display memory display = displays[_gameId];
-        checker1 = _getColor(display.player1);
-        checker2 = _getColor(display.player2);
-    }
-
-    function _getColor(string memory _player) internal pure returns (string memory checker) {
+    function _checkColor(string memory _player) internal pure returns (string memory checker) {
         if (_hash(_player) == _hash(BLUE)) checker = "Blue";
         else if (_hash(_player) == _hash(RED)) {
             checker = "Red";

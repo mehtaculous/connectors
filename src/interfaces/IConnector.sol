@@ -3,6 +3,8 @@ pragma solidity 0.8.13;
 
 uint256 constant COL = 7;
 uint256 constant ROW = 6;
+uint256 constant MAX_SUPPLY = 100;
+uint256 constant MIN_MOVES = 7;
 
 enum State {
     INACTIVE,
@@ -26,7 +28,6 @@ struct Game {
     address player2;
     address turn;
     uint256 moves;
-    address winner;
     address[COL][ROW] board;
 }
 
@@ -35,7 +36,6 @@ interface IConnector {
     error InvalidMatchup();
     error InvalidMove();
     error InvalidPayment();
-    error InvalidPlacement();
     error InvalidState();
     error InvalidTurn();
     error NotAuthorized();
@@ -68,6 +68,8 @@ interface IConnector {
     function begin(uint256 _gameId, uint256 _row, uint256 _col) external payable;
 
     function fee() external view returns (uint256);
+
+    function metadata() external view returns (address);
 
     function move(
         uint256 _gameId,

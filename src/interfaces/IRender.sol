@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.13;
 
-import {COL, ROW} from "./IConnector.sol";
+import {COL, ROW, State} from "src/interfaces/IConnector.sol";
 
 struct Display {
     string base;
@@ -40,7 +40,9 @@ interface IRender {
         address[COL][ROW] memory _board
     ) external view returns (string memory svg);
 
-    function getCheckers(uint256 _gameId) external view returns (string memory checker1, string memory checker2);
+    function getChecker(uint256 _gameId) external view returns (string memory checker1, string memory checker2);
+
+    function getStatus(State _state) external view returns (string memory status);
 
     function register(uint256 _gameId) external;
 }

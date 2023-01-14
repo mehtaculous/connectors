@@ -4,7 +4,7 @@ pragma solidity 0.8.13;
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 
-import "./IRender.sol";
+import "src/interfaces/IRender.sol";
 
 contract Render is IRender, Ownable {
     using Strings for uint256;
@@ -46,30 +46,8 @@ contract Render is IRender, Ownable {
         svg = string.concat(board, "</svg>");
     }
 
-    function getCheckers(uint256 _gameId) external view returns (string memory checker1, string memory checker2) {
-        Display memory display = displays[_gameId];
-        string memory player1 = display.player1;
-        string memory player2 = display.player2;
-
-        if (_hash(player1) == _hash(BLUE))
-            checker1 = "Blue";
-        else if (_hash(player1) == _hash(RED)) {
-            checker1 = "Red";
-        } else {
-            checker1 = "Yellow";
-        }
-
-        if (_hash(player2) == _hash(BLUE))
-            checker2 = "Blue";
-        else if (_hash(player2) == _hash(RED)) {
-            checker2 = "Red";
-        } else {
-            checker2 = "Yellow";
-        }
-    }
-
     function generateBoard() public pure returns (string memory) {
-        return "<svg width='600px' viewBox='0 0 700 600' xmlns='http://www.w3.org/2000/svg'><defs><pattern id='cell-pattern' patternUnits='userSpaceOnUse' width='100' height='100'><circle cx='50' cy='50' r='45' fill='black'></circle></pattern><mask id='cell-mask'><rect width='100' height='600' fill='white'></rect><rect width='100' height='600' fill='url(#cell-pattern)'></rect></mask></defs>";
+        return "<svg width='500px' viewBox='0 0 700 600' xmlns='http://www.w3.org/2000/svg'><defs><pattern id='cell-pattern' patternUnits='userSpaceOnUse' width='100' height='100'><circle cx='50' cy='50' r='45' fill='black'></circle></pattern><mask id='cell-mask'><rect width='100' height='600' fill='white'></rect><rect width='100' height='600' fill='url(#cell-pattern)'></rect></mask></defs>";
     }
 
     function generateGrid(uint256 _col) public pure returns (string memory) {
@@ -101,6 +79,34 @@ contract Render is IRender, Ownable {
         cell[4] = "'></circle>";
 
         return string(abi.encodePacked(cell[0], cell[1], cell[2], cell[3], cell[4]));
+    }
+
+    function getStatus(State _state) external pure returns (string memory status) {
+        if (_state == State.INACTIVE) {
+            status = "Inactive";
+        } else if (_state == State.ACTIVE) {
+            status = "Active";
+        } else if (_state == State.SUCCESS) {
+            status = "Success";
+        } else {
+            status = "Draw";
+        }
+    }
+
+    function getChecker(uint256 _gameId) external view returns (string memory checker1, string memory checker2) {
+        Display memory display = displays[_gameId];
+        checker1 = _getColor(display.player1);
+        checker2 = _getColor(display.player2);
+    }
+
+    function _getColor(string memory _player) internal pure returns (string memory checker) {
+        if (_hash(_player) == _hash(BLUE))
+            checker = "Blue";
+        else if (_hash(_player) == _hash(RED)) {
+            checker = "Red";
+        } else {
+            checker = "Yellow";
+        }
     }
 
     function _hash(string memory _value) internal pure returns (bytes32) {

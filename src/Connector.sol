@@ -5,8 +5,8 @@ import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/utils/ERC721Holder.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
-import "./IConnector.sol";
-import "./Render.sol";
+import "src/Render.sol";
+import "src/interfaces/IConnector.sol";
 
 contract Connector is IConnector, ERC721, ERC721Holder, Ownable {
     using Strings for uint160;
@@ -115,49 +115,76 @@ contract Connector is IConnector, ERC721, ERC721Holder, Ownable {
         address[COL][ROW] memory board = game.board;
         address player1 = game.player1;
         address player2 = game.player2;
-        address turn = game.turn;
-        uint256 moves = game.moves;
-
+        string memory name = string.concat("Connector #", _tokenId.toString());
+        string memory description = "Just a friendly on-chain game of Connect Four.";
         string memory image = IRender(render).generateSVG(_tokenId, player1, player2, board);
-        string memory status = _getStatus(game.state);
-        string memory winner = (game.winner == address(0)) ? "N/A" : _substring(uint160(game.winner).toHexString(20), 0, 10);
-        (string memory checker1, string memory checker2) = IRender(render).getCheckers(_tokenId);
+        string memory playerTraits = getPlayerTraits(_tokenId, player1, player2);
+        string memory gameTraits = getGameTraits(game);
 
         return
             string(
                 abi.encodePacked(
                     'data:application/json;utf8,',
                     '{"name":"',
-                        string.concat("Connector #", _tokenId.toString()),
+                        name,
                     '",',
                     '"description":"',
-                        "Just a friendly on-chain game of Connect Four.",
+                        description,
                     '",',
                     '"image": "data:image/svg+xml;utf8,',
                         image,
                     '",',
-                    '"attributes": [{"trait_type":"',
+                    '"attributes": [',
+                        playerTraits,
+                        gameTraits,
+                    ']}'
+                )
+            );
+    }
+
+    function getPlayerTraits(uint256 _tokenId, address _player1, address _player2) public view returns (string memory) {
+        string memory player1 = uint160(_player1).toHexString(20);
+        string memory player2 = uint160(_player2).toHexString(20);
+        (string memory checker1, string memory checker2) = IRender(render).getChecker(_tokenId);
+
+        return
+            string(
+                abi.encodePacked(
+                    '{"trait_type":"',
                         checker1,
                     '", "value":"',
-                        _substring(uint160(player1).toHexString(20), 0, 10),
+                        _substring(player1),
                     '"},',
                     '{"trait_type":"',
                         checker2,
                     '", "value":"',
-                        _substring(uint160(player2).toHexString(20), 0, 10),
-                    '"},',
+                        _substring(player2),
+                    '"},'
+                )
+            );
+    }
+
+    function getGameTraits(Game memory _game) public pure returns (string memory) {
+        string memory moves = _game.moves.toString();
+        string memory status = _getStatus(_game.state);
+        string memory turn = uint160(_game.turn).toHexString(20);
+        string memory winner = uint160(_game.winner).toHexString(20);
+
+        return
+            string(
+                abi.encodePacked(
                     '{"trait_type":"Turn", "value":"',
-                        _substring(uint160(turn).toHexString(20), 0, 10),
+                        _substring(turn),
                     '"},',
                     '{"trait_type":"Moves", "value":"',
-                        moves.toString(),
+                        moves,
                     '"},',
                     '{"trait_type":"Status", "value":"',
                         status,
                     '"},',
                     '{"trait_type":"Winner", "value":"',
-                        winner,
-                    '"}]}'
+                        _substring(winner),
+                    '"}'
                 )
             );
     }
@@ -303,11 +330,11 @@ contract Connector is IConnector, ERC721, ERC721Holder, Ownable {
         }
     }
 
-    function _substring(string memory _str, uint256 _start, uint256 _end) public pure returns (string memory) {
-        bytes memory strBytes = bytes(_str);
-        bytes memory result = new bytes(_end - _start);
-        for(uint i = _start; i < _end; ++i) {
-            result[i-_start] = strBytes[i];
+    function _substring(string memory _str) public pure returns (string memory) {
+        bytes memory str = bytes(_str);
+        bytes memory result = new bytes(10);
+        for(uint i; i < 10; ++i) {
+            result[i] = str[i];
         }
         return string(result);
     }

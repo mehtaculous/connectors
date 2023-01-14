@@ -1,11 +1,12 @@
-# Compiler files
+# Compiler
 cache/
 out/
 
-# Ignores development broadcast logs
-!/broadcast
-/broadcast/*/31337/
-/broadcast/**/dry-run/
+# Node
+node_modules/
 
-# Dotenv file
+# Forge
+broadcast/
+
+# Environment
 .env

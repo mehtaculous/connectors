@@ -45,7 +45,13 @@ interface IConnector {
 
     event Begin(uint256 indexed _gameId, address indexed _player2, State indexed _state);
 
-    event Move(uint256 indexed _gameId, address indexed _player, uint256 _move, uint256 _row, uint256 _col);
+    event Move(
+        uint256 indexed _gameId,
+        address indexed _player,
+        uint256 _move,
+        uint256 _row,
+        uint256 _col
+    );
 
     event Result(
         uint256 indexed _gameId,
@@ -63,7 +69,11 @@ interface IConnector {
 
     function fee() external view returns (uint256);
 
-    function move(uint256 _gameId, uint256 _row, uint256 _col) external payable returns (Strat result);
+    function move(
+        uint256 _gameId,
+        uint256 _row,
+        uint256 _col
+    ) external payable returns (Strat result);
 
     function setFee(uint256 _fee) external payable;
 

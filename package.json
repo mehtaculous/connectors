@@ -1,0 +1,12 @@
+{
+    "scripts": {
+        "prettier": "prettier --write 'src/**/*.sol' 'test/**/*.sol'",
+        "solhint": "solhint --config ./.solhint.json 'src/**/*.sol' --fix",
+        "lint": "npm run prettier && npm run solhint"
+    },
+    "dependencies": {
+        "prettier": "^2.8.3",
+        "prettier-plugin-solidity": "^1.1.1",
+        "solhint": "^3.3.7"
+    }
+}

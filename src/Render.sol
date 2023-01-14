@@ -17,9 +17,9 @@ contract Render is IRender, Ownable {
 
     function register(uint256 _gameId) external onlyOwner {
         Display storage display = displays[_gameId];
-        display.base = palette[_gameId-1 % 3];
+        display.base = palette[_gameId - (1 % 3)];
         display.player1 = palette[(_gameId) % 3];
-        display.player2 = palette[(_gameId+1) % 3];
+        display.player2 = palette[(_gameId + 1) % 3];
     }
 
     function generateSVG(
@@ -47,7 +47,8 @@ contract Render is IRender, Ownable {
     }
 
     function generateBoard() public pure returns (string memory) {
-        return "<svg width='500px' viewBox='0 0 700 600' xmlns='http://www.w3.org/2000/svg'><defs><pattern id='cell-pattern' patternUnits='userSpaceOnUse' width='100' height='100'><circle cx='50' cy='50' r='45' fill='black'></circle></pattern><mask id='cell-mask'><rect width='100' height='600' fill='white'></rect><rect width='100' height='600' fill='url(#cell-pattern)'></rect></mask></defs>";
+        return
+            "<svg width='500px' viewBox='0 0 700 600' xmlns='http://www.w3.org/2000/svg'><defs><pattern id='cell-pattern' patternUnits='userSpaceOnUse' width='100' height='100'><circle cx='50' cy='50' r='45' fill='black'></circle></pattern><mask id='cell-mask'><rect width='100' height='600' fill='white'></rect><rect width='100' height='600' fill='url(#cell-pattern)'></rect></mask></defs>";
     }
 
     function generateGrid(uint256 _col) public pure returns (string memory) {
@@ -69,7 +70,10 @@ contract Render is IRender, Ownable {
         return string(abi.encodePacked(base[0], base[1], base[2]));
     }
 
-    function generateCell(uint256 _row, string memory _checker) public pure returns (string memory) {
+    function generateCell(
+        uint256 _row,
+        string memory _checker
+    ) public pure returns (string memory) {
         uint256 cy = 550 - (_row * 100);
         string[5] memory cell;
         cell[0] = "<circle cx='50' cy='";
@@ -93,15 +97,16 @@ contract Render is IRender, Ownable {
         }
     }
 
-    function getChecker(uint256 _gameId) external view returns (string memory checker1, string memory checker2) {
+    function getChecker(
+        uint256 _gameId
+    ) external view returns (string memory checker1, string memory checker2) {
         Display memory display = displays[_gameId];
         checker1 = _getColor(display.player1);
         checker2 = _getColor(display.player2);
     }
 
     function _getColor(string memory _player) internal pure returns (string memory checker) {
-        if (_hash(_player) == _hash(BLUE))
-            checker = "Blue";
+        if (_hash(_player) == _hash(BLUE)) checker = "Blue";
         else if (_hash(_player) == _hash(RED)) {
             checker = "Red";
         } else {

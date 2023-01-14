@@ -16,20 +16,18 @@ interface IRender {
 
     function YELLOW() external view returns (string memory);
 
-    function displays(uint256)
-        external
-        view
-        returns (
-            string memory base,
-            string memory player1,
-            string memory player2
-        );
+    function displays(
+        uint256
+    ) external view returns (string memory base, string memory player1, string memory player2);
 
     function generateBase(string memory _base) external pure returns (string memory);
 
     function generateBoard() external pure returns (string memory);
 
-    function generateCell(uint256 _row, string memory _checker) external pure returns (string memory);
+    function generateCell(
+        uint256 _row,
+        string memory _checker
+    ) external pure returns (string memory);
 
     function generateGrid(uint256 _col) external pure returns (string memory);
 
@@ -40,7 +38,9 @@ interface IRender {
         address[COL][ROW] memory _board
     ) external view returns (string memory svg);
 
-    function getChecker(uint256 _gameId) external view returns (string memory checker1, string memory checker2);
+    function getChecker(
+        uint256 _gameId
+    ) external view returns (string memory checker1, string memory checker2);
 
     function getStatus(State _state) external view returns (string memory status);
 

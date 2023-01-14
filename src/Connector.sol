@@ -37,11 +37,7 @@ contract Connector is IConnector, ERC721, ERC721Holder, Ownable {
         emit Challenge(currentId, msg.sender, _opponent);
     }
 
-    function begin(
-        uint256 _gameId,
-        uint256 _row,
-        uint256 _col
-    ) external payable {
+    function begin(uint256 _gameId, uint256 _row, uint256 _col) external payable {
         Game storage game = games[_gameId];
         if (msg.value != fee / 2) revert InvalidPayment();
         if (State.INACTIVE != game.state) revert InvalidState();
@@ -64,7 +60,8 @@ contract Connector is IConnector, ERC721, ERC721Holder, Ownable {
 
         if (game.state != State.ACTIVE) revert InvalidState();
         if (game.turn != msg.sender) revert InvalidTurn();
-        if (board[_row][_col] != address(0) || (_row > 0 && board[_row-1][_col] == address(0))) revert InvalidMove();
+        if (board[_row][_col] != address(0) || (_row > 0 && board[_row - 1][_col] == address(0)))
+            revert InvalidMove();
         if (_row >= ROW || _col >= COL) revert InvalidPlacement();
 
         ++game.moves;
@@ -118,8 +115,8 @@ contract Connector is IConnector, ERC721, ERC721Holder, Ownable {
         string memory name = string.concat("Connector #", _tokenId.toString());
         string memory description = "Just a friendly on-chain game of Connect Four.";
         string memory image = IRender(render).generateSVG(_tokenId, player1, player2, board);
-        string memory playerTraits = getPlayerTraitsJSON(_tokenId, player1, player2);
-        string memory gameTraits = getGameTraitsJSON(game);
+        string memory playerTraits = getPlayerTraits(_tokenId, player1, player2);
+        string memory gameTraits = getGameTraits(game);
 
         return
             string(
@@ -142,7 +139,11 @@ contract Connector is IConnector, ERC721, ERC721Holder, Ownable {
             );
     }
 
-    function getPlayerTraitsJSON(uint256 _tokenId, address _player1, address _player2) public view returns (string memory) {
+    function getPlayerTraits(
+        uint256 _tokenId,
+        address _player1,
+        address _player2
+    ) public view returns (string memory) {
         string memory player1 = uint160(_player1).toHexString(20);
         string memory player2 = uint160(_player2).toHexString(20);
         (string memory checker1, string memory checker2) = IRender(render).getChecker(_tokenId);
@@ -160,7 +161,7 @@ contract Connector is IConnector, ERC721, ERC721Holder, Ownable {
             );
     }
 
-    function getGameTraitsJSON(Game memory _game) public view returns (string memory) {
+    function getGameTraits(Game memory _game) public view returns (string memory) {
         string memory moves = _game.moves.toString();
         string memory status = IRender(render).getStatus(_game.state);
         string memory turn = uint160(_game.turn).toHexString(20);
@@ -317,7 +318,7 @@ contract Connector is IConnector, ERC721, ERC721Holder, Ownable {
     function _substring(string memory _str) public pure returns (string memory) {
         bytes memory str = bytes(_str);
         bytes memory result = new bytes(10);
-        for(uint256 i; i < 10; ++i) {
+        for (uint256 i; i < 10; ++i) {
             result[i] = str[i];
         }
         return string(result);

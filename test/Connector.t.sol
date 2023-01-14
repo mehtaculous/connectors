@@ -9,9 +9,6 @@ import "src/interfaces/IConnector.sol";
 import "src/interfaces/IMetadata.sol";
 
 contract ConnectorTest is Test {
-    using Strings for uint160;
-    using Strings for uint256;
-
     // Contracts
     Connector connector;
 
@@ -47,7 +44,6 @@ contract ConnectorTest is Test {
     bytes4 INVALID_MOVE_ERROR = IConnector.InvalidMove.selector;
     bytes4 INVALID_PAYMENT_ERROR = IConnector.InvalidPayment.selector;
     bytes4 INVALID_STATE_ERROR = IConnector.InvalidState.selector;
-    bytes4 INVALID_TURN_ERROR = IConnector.InvalidTurn.selector;
     bytes4 NOT_AUTHORIZED_ERROR = IConnector.NotAuthorized.selector;
 
     modifier prank(address _sender) {
@@ -186,12 +182,12 @@ contract ConnectorTest is Test {
         _move(bob, gameId, row, _col);
     }
 
-    function testMoveRevertInvalidTurn(uint256 _col) public {
+    function testMoveRevertNotAuthorized(uint256 _col) public {
         // setup
         testBeginSuccess(_col);
         _col = _boundCol(_col, 0, COL);
         // revert
-        vm.expectRevert(INVALID_TURN_ERROR);
+        vm.expectRevert(NOT_AUTHORIZED_ERROR);
         // execute
         _move(bob, gameId, row, _col);
     }

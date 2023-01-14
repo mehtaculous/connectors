@@ -3,8 +3,6 @@ pragma solidity 0.8.13;
 
 uint256 constant COL = 7;
 uint256 constant ROW = 6;
-uint256 constant MAX_SUPPLY = 100;
-uint256 constant MIN_MOVES = 7;
 
 enum State {
     INACTIVE,
@@ -37,7 +35,6 @@ interface IConnector {
     error InvalidMove();
     error InvalidPayment();
     error InvalidState();
-    error InvalidTurn();
     error NotAuthorized();
     error UnsuccessfulTransfer();
 

@@ -39,8 +39,8 @@ contract Connector is IConnector, ERC721, ERC721Holder, Ownable {
 
     function begin(
         uint256 _gameId,
-        uint256 _col,
-        uint256 _row
+        uint256 _row,
+        uint256 _col
     ) external payable {
         Game storage game = games[_gameId];
         if (msg.value != fee / 2) revert InvalidPayment();
@@ -50,13 +50,13 @@ contract Connector is IConnector, ERC721, ERC721Holder, Ownable {
         game.state = State.ACTIVE;
         emit Begin(_gameId, msg.sender, game.state);
 
-        move(_gameId, _col, _row);
+        move(_gameId, _row, _col);
     }
 
     function move(
         uint256 _gameId,
-        uint256 _col,
-        uint256 _row
+        uint256 _row,
+        uint256 _col
     ) public payable returns (Strat result) {
         if (_gameId == 0 || _gameId > currentId) revert InvalidGame();
         Game storage game = games[_gameId];
@@ -70,13 +70,13 @@ contract Connector is IConnector, ERC721, ERC721Holder, Ownable {
         ++game.moves;
         uint256 moves = game.moves;
         board[_row][_col] = msg.sender;
-        emit Move(_gameId, msg.sender, moves, _col, _row);
+        emit Move(_gameId, msg.sender, moves, _row, _col);
 
         if (moves >= 7) {
             result = _checkHorizontal(msg.sender, _col, _row, board);
-            if (result == Strat.NONE) result = _checkVertical(msg.sender, _col, _row, board);
-            if (result == Strat.NONE) result = _checkAscending(msg.sender, _col, _row, board);
-            if (result == Strat.NONE) result = _checkDescending(msg.sender, _col, _row, board);
+            if (result == Strat.NONE) result = _checkVertical(msg.sender, _row, _col, board);
+            if (result == Strat.NONE) result = _checkAscending(msg.sender, _row, _col, board);
+            if (result == Strat.NONE) result = _checkDescending(msg.sender, _row, _col, board);
         }
 
         if (result != Strat.NONE) {
@@ -118,8 +118,8 @@ contract Connector is IConnector, ERC721, ERC721Holder, Ownable {
         string memory name = string.concat("Connector #", _tokenId.toString());
         string memory description = "Just a friendly on-chain game of Connect Four.";
         string memory image = IRender(render).generateSVG(_tokenId, player1, player2, board);
-        string memory playerTraits = getPlayerTraits(_tokenId, player1, player2);
-        string memory gameTraits = getGameTraits(game);
+        string memory playerTraits = getPlayerTraitsJSON(_tokenId, player1, player2);
+        string memory gameTraits = getGameTraitsJSON(game);
 
         return
             string(
@@ -142,7 +142,7 @@ contract Connector is IConnector, ERC721, ERC721Holder, Ownable {
             );
     }
 
-    function getPlayerTraits(uint256 _tokenId, address _player1, address _player2) public view returns (string memory) {
+    function getPlayerTraitsJSON(uint256 _tokenId, address _player1, address _player2) public view returns (string memory) {
         string memory player1 = uint160(_player1).toHexString(20);
         string memory player2 = uint160(_player2).toHexString(20);
         (string memory checker1, string memory checker2) = IRender(render).getChecker(_tokenId);
@@ -150,23 +150,19 @@ contract Connector is IConnector, ERC721, ERC721Holder, Ownable {
         return
             string(
                 abi.encodePacked(
-                    '{"trait_type":"',
-                        checker1,
-                    '", "value":"',
-                        _substring(player1),
+                    '{"trait_type":"', checker1,
+                    '", "value":"', _substring(player1),
                     '"},',
-                    '{"trait_type":"',
-                        checker2,
-                    '", "value":"',
-                        _substring(player2),
+                    '{"trait_type":"', checker2,
+                    '", "value":"', _substring(player2),
                     '"},'
                 )
             );
     }
 
-    function getGameTraits(Game memory _game) public pure returns (string memory) {
+    function getGameTraitsJSON(Game memory _game) public view returns (string memory) {
         string memory moves = _game.moves.toString();
-        string memory status = _getStatus(_game.state);
+        string memory status = IRender(render).getStatus(_game.state);
         string memory turn = uint160(_game.turn).toHexString(20);
         string memory winner = uint160(_game.winner).toHexString(20);
 
@@ -191,8 +187,8 @@ contract Connector is IConnector, ERC721, ERC721Holder, Ownable {
 
     function _checkVertical(
         address _player,
-        uint256 _col,
         uint256 _row,
+        uint256 _col,
         address[COL][ROW] storage _board
     ) internal view returns (Strat result) {
         uint256 i;
@@ -223,8 +219,8 @@ contract Connector is IConnector, ERC721, ERC721Holder, Ownable {
 
     function _checkHorizontal(
         address _player,
-        uint256 _col,
         uint256 _row,
+        uint256 _col,
         address[COL][ROW] storage _board
     ) internal view returns (Strat result) {
         uint256 i;
@@ -255,8 +251,8 @@ contract Connector is IConnector, ERC721, ERC721Holder, Ownable {
 
     function _checkAscending(
         address _player,
-        uint256 _col,
         uint256 _row,
+        uint256 _col,
         address[COL][ROW] storage _board
     ) internal view returns (Strat result) {
         uint256 i;
@@ -287,8 +283,8 @@ contract Connector is IConnector, ERC721, ERC721Holder, Ownable {
 
     function _checkDescending(
         address _player,
-        uint256 _col,
         uint256 _row,
+        uint256 _col,
         address[COL][ROW] storage _board
     ) internal view returns (Strat result) {
         uint256 i;
@@ -318,22 +314,10 @@ contract Connector is IConnector, ERC721, ERC721Holder, Ownable {
         if (counter > 2) result = Strat.DESCENDING;
     }
 
-    function _getStatus(State _state) internal pure returns (string memory status) {
-        if (_state == State.INACTIVE) {
-            status = "Inactive";
-        } else if (_state == State.ACTIVE) {
-            status = "Active";
-        } else if (_state == State.SUCCESS) {
-            status = "Success";
-        } else {
-            status = "Draw";
-        }
-    }
-
     function _substring(string memory _str) public pure returns (string memory) {
         bytes memory str = bytes(_str);
         bytes memory result = new bytes(10);
-        for(uint i; i < 10; ++i) {
+        for(uint256 i; i < 10; ++i) {
             result[i] = str[i];
         }
         return string(result);

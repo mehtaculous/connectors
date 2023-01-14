@@ -16,7 +16,7 @@ interface IRender {
 
     function YELLOW() external view returns (string memory);
 
-    function renders(
+    function displays(
         uint256
     ) external view returns (string memory base, string memory player1, string memory player2);
 

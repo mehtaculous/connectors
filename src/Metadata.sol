@@ -8,7 +8,6 @@ import "src/interfaces/IMetadata.sol";
 
 contract Metadata is IMetadata, Ownable {
     using Strings for uint256;
-
     string public constant BLUE = "#29335c";
     string public constant RED = "#DB2B39";
     string public constant YELLOW = "#F3A712";
@@ -32,7 +31,6 @@ contract Metadata is IMetadata, Ownable {
     ) external view returns (string memory svg) {
         Render memory render = renders[_gameId];
         string memory board = generateBoard();
-
         for (uint256 y; y < COL; ++y) {
             board = string.concat(board, generateGrid(y));
             for (uint256 x; x < ROW; ++x) {
@@ -44,7 +42,6 @@ contract Metadata is IMetadata, Ownable {
             }
             board = string.concat(board, generateBase(render.base));
         }
-
         svg = string.concat(board, "</svg>");
     }
 
@@ -89,31 +86,23 @@ contract Metadata is IMetadata, Ownable {
 
     function getChecker(
         uint256 _gameId
-    ) external view returns (string memory checker1, string memory checker2) {
+    ) external view returns (string memory player1, string memory player2) {
         Render memory render = renders[_gameId];
-        checker1 = _checkColor(render.player1);
-        checker2 = _checkColor(render.player2);
+        player1 = _checkColor(render.player1);
+        player2 = _checkColor(render.player2);
     }
 
     function getStatus(State _state) external pure returns (string memory status) {
-        if (_state == State.INACTIVE) {
-            status = "Inactive";
-        } else if (_state == State.ACTIVE) {
-            status = "Active";
-        } else if (_state == State.SUCCESS) {
-            status = "Success";
-        } else {
-            status = "Draw";
-        }
+        if (_state == State.INACTIVE) status = "Inactive";
+        else if (_state == State.ACTIVE) status = "Active";
+        else if (_state == State.SUCCESS) status = "Success";
+        else status = "Draw";
     }
 
     function _checkColor(string memory _player) internal pure returns (string memory checker) {
         if (_hash(_player) == _hash(BLUE)) checker = "Blue";
-        else if (_hash(_player) == _hash(RED)) {
-            checker = "Red";
-        } else {
-            checker = "Yellow";
-        }
+        else if (_hash(_player) == _hash(RED)) checker = "Red";
+        else checker = "Yellow";
     }
 
     function _hash(string memory _value) internal pure returns (bytes32) {

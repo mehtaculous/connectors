@@ -32,8 +32,7 @@ contract Connector is IConnector, ERC721, ERC721Holder, Ownable {
     }
 
     /// @notice Creates new game and mints new board
-    /// @dev Game can only become active once opponent calls
-    ///      begin and both players must pay the same fee
+    /// @dev Game can only become active once opponent calls begin
     /// @param _opponent Address of opponent
     function challenge(address _opponent) external payable {
         // Reverts if payment amount is incorrect

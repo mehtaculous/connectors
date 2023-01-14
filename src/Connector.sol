@@ -23,7 +23,7 @@ contract Connector is IConnector, ERC721, ERC721Holder, Ownable {
     }
 
     function challenge(address _opponent) external payable {
-        if (msg.value != fee / 2) revert InvalidPayment();
+        if (msg.value != fee) revert InvalidPayment();
         if (msg.sender == _opponent) revert InvalidMatchup();
 
         Game storage game = games[++currentId];
@@ -40,7 +40,7 @@ contract Connector is IConnector, ERC721, ERC721Holder, Ownable {
     function begin(uint256 _gameId, uint256 _row, uint256 _col) external payable {
         if (_gameId == 0 || _gameId > currentId) revert InvalidGame();
         Game storage game = games[_gameId];
-        if (msg.value != fee / 2) revert InvalidPayment();
+        if (msg.value != fee) revert InvalidPayment();
         if (State.INACTIVE != game.state) revert InvalidState();
         if (msg.sender != game.player2) revert NotAuthorized();
 
@@ -156,12 +156,12 @@ contract Connector is IConnector, ERC721, ERC721Holder, Ownable {
                     '{"trait_type":"',
                         checker1,
                     '", "value":"',
-                        _substring(player1),
+                        player1,
                     '"},',
                     '{"trait_type":"',
                         checker2,
                     '", "value":"',
-                        _substring(player2),
+                        player2,
                     '"},'
                 )
             );
@@ -186,10 +186,15 @@ contract Connector is IConnector, ERC721, ERC721Holder, Ownable {
                     '{"trait_type":"',
                         label,
                     '", "value":"',
-                        _substring(turn),
+                        turn,
                     '"}'
                 )
             );
+    }
+
+    function getRow(uint256 _gameId, uint256 _row) public view returns (address[COL] memory) {
+        Game memory game = games[_gameId];
+        return game.board[_row];
     }
 
     function _checkVertical(
@@ -319,14 +324,5 @@ contract Connector is IConnector, ERC721, ERC721Holder, Ownable {
         }
 
         if (counter > 2) result = Strat.DESCENDING;
-    }
-
-    function _substring(string memory _str) public pure returns (string memory) {
-        bytes memory str = bytes(_str);
-        bytes memory result = new bytes(10);
-        for (uint256 i; i < 10; ++i) {
-            result[i] = str[i];
-        }
-        return string(result);
     }
 }

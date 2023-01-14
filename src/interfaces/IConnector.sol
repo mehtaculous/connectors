@@ -69,6 +69,8 @@ interface IConnector {
 
     function fee() external view returns (uint256);
 
+    function getRow(uint256 _gameId, uint256 _row) external view returns (address[COL] memory);
+
     function metadata() external view returns (address);
 
     function move(

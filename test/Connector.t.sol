@@ -89,6 +89,7 @@ contract ConnectorsTest is Test {
         assertEq(turn, eve);
         assertEq(uint256(state), uint256(State.INACTIVE));
         assertEq(connectors.ownerOf(gameId), address(connectors));
+        connectors.tokenURI(gameId);
     }
 
     function testChallengeRevertInvalidPlayerOrigin() public {
@@ -135,6 +136,7 @@ contract ConnectorsTest is Test {
         assertEq(moves, 1);
         assertEq(turn, bob);
         assertEq(uint256(state), uint256(State.ACTIVE));
+        connectors.tokenURI(gameId);
     }
 
     function testBeginRevertInvalidGame(uint256 _col) public {
@@ -191,6 +193,7 @@ contract ConnectorsTest is Test {
         assertEq(board[row][col], bob);
         assertEq(moves, 2);
         assertEq(turn, eve);
+        connectors.tokenURI(gameId);
     }
 
     function testMoveRevertInvalidGame(uint256 _col) public {
@@ -463,7 +466,7 @@ contract ConnectorsTest is Test {
     ) internal prankOrigin(_sender, _sender) {
         connectors.challenge{value: _fee}(_opponent);
         _setGame();
-        _setState(gameId, row, col);
+        _setState(gameId);
     }
 
     function _begin(
@@ -474,8 +477,9 @@ contract ConnectorsTest is Test {
         uint256 _fee
     ) internal prank(_sender) {
         connectors.begin{value: _fee}(_gameId, _row, _col);
-        _setState(gameId, _row, _col);
-        if (_row < ROW) _setBoard(gameId, _row);
+        _setState(gameId);
+        _setMove(_row, _col);
+        if (row < ROW) _setBoard(gameId, row);
     }
 
     function _move(
@@ -485,8 +489,9 @@ contract ConnectorsTest is Test {
         uint256 _col
     ) internal prank(_sender) {
         connectors.move(_gameId, _row, _col);
-        _setState(gameId, _row, _col);
-        if (_row < ROW) _setBoard(gameId, _row);
+        _setState(gameId);
+        _setMove(_row, _col);
+        if (row < ROW) _setBoard(gameId, row);
     }
 
     function _setFee(address _sender, uint256 _fee) internal prank(_sender) {
@@ -502,8 +507,11 @@ contract ConnectorsTest is Test {
         gameId = connectors.currentId();
     }
 
-    function _setState(uint256 _gameId, uint256 _row, uint256 _col) internal {
-        (state, strat, player1, player2, turn, moves) = connectors.games(_gameId);
+    function _setState(uint256 _gameId) internal {
+        (state, strat, player1, player2, turn, moves, , ) = connectors.games(_gameId);
+    }
+
+    function _setMove(uint256 _row, uint256 _col) internal {
         row = _row;
         col = _col;
     }

@@ -117,6 +117,10 @@ contract Connectors is IConnectors, ERC721, ERC721Holder, Ownable {
         if (board[_row][_col] != address(0) || (_row > 0 && board[_row - 1][_col] == address(0)))
             revert InvalidMove();
 
+        // Records move
+        game.row = _row;
+        game.col = _col;
+
         // Increments total number of moves made
         ++game.moves;
         uint256 moves = game.moves;
@@ -202,9 +206,16 @@ contract Connectors is IConnectors, ERC721, ERC721Holder, Ownable {
         address player2 = game.player2;
         string memory name = string.concat("Board #", _tokenId.toString());
         string memory description = "Just a friendly on-chain game of Connect Four.";
-        string memory image = IMetadata(metadata).generateSVG(_tokenId, player1, player2, board);
         string memory playerTraits = generatePlayerTraits(_tokenId, player1, player2);
         string memory gameTraits = generateGameTraits(game);
+        string memory image = IMetadata(metadata).generateSVG(
+            _tokenId,
+            game.row,
+            game.col,
+            player1,
+            player2,
+            board
+        );
 
         return
             string(
@@ -266,10 +277,20 @@ contract Connectors is IConnectors, ERC721, ERC721Holder, Ownable {
         string memory status = IMetadata(metadata).getStatus(_game.state);
         string memory turn = uint160(_game.turn).toHexString(20);
         string memory label = (_game.state == State.SUCCESS) ? "Winner" : "Turn";
+        string memory latest = string.concat(
+            "(",
+            _game.row.toString(),
+            ", ",
+            _game.col.toString(),
+            ")"
+        );
 
         return
             string(
                 abi.encodePacked(
+                    '{"trait_type":"Latest", "value":"',
+                        latest,
+                    '"},',
                     '{"trait_type":"Moves", "value":"',
                         moves,
                     '"},',

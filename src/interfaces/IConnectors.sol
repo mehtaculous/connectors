@@ -26,6 +26,8 @@ struct Game {
     address player2;
     address turn;
     uint256 moves;
+    uint256 row;
+    uint256 col;
     address[COL][ROW] board;
 }
 
@@ -45,7 +47,7 @@ interface IConnectors {
     event Move(
         uint256 indexed _gameId,
         address indexed _player,
-        uint256 _move,
+        uint256 _moves,
         uint256 _row,
         uint256 _col
     );

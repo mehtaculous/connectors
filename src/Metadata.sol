@@ -24,6 +24,8 @@ contract Metadata is IMetadata, Ownable {
 
     function generateSVG(
         uint256 _gameId,
+        uint256 _row,
+        uint256 _col,
         address _player1,
         address _player2,
         address[COL][ROW] memory _board
@@ -34,9 +36,9 @@ contract Metadata is IMetadata, Ownable {
             board = string.concat(board, generateGrid(y));
             for (uint256 x; x < ROW; ++x) {
                 if (_board[x][y] == _player1) {
-                    board = string.concat(board, generateCell(x, render.player1));
+                    board = string.concat(board, generateCell(x, y, _row, _col, render.player1));
                 } else if (_board[x][y] == _player2) {
-                    board = string.concat(board, generateCell(x, render.player2));
+                    board = string.concat(board, generateCell(x, y, _row, _col, render.player2));
                 }
             }
             board = string.concat(board, generateBase(render.base));
@@ -69,18 +71,39 @@ contract Metadata is IMetadata, Ownable {
     }
 
     function generateCell(
+        uint256 _x,
+        uint256 _y,
         uint256 _row,
+        uint256 _col,
         string memory _checker
     ) public pure returns (string memory) {
-        uint256 cy = 550 - (_row * 100);
-        string[5] memory cell;
-        cell[0] = "<circle cx='50' cy='";
-        cell[1] = cy.toString();
-        cell[2] = "' r='45' fill='";
-        cell[3] = _checker;
-        cell[4] = "'></circle>";
+        uint256 cy = 550 - (_x * 100);
+        if (_x == _row && _y == _col) {
+            string[7] memory cell;
+            uint256 duration = (cy / 100 == 0) ? 1 : cy / 100;
+            string memory secs = string.concat(duration.toString(), "s");
+            cell[0] = "<circle id='current-move' cx='50' cy='0' r='45' fill='";
+            cell[1] = _checker;
+            cell[2] = "'><animate xlink:href='#current-move' attributename='cy' from='0' to='";
+            cell[3] = cy.toString();
+            cell[4] = " 'dur='";
+            cell[5] = secs;
+            cell[6] = "' begin='2s' fill='freeze'></animate></circle>";
 
-        return string(abi.encodePacked(cell[0], cell[1], cell[2], cell[3], cell[4]));
+            return
+                string(
+                    abi.encodePacked(cell[0], cell[1], cell[2], cell[3], cell[4], cell[5], cell[6])
+                );
+        } else {
+            string[5] memory cell;
+            cell[0] = "<circle cx='50' cy='";
+            cell[1] = cy.toString();
+            cell[2] = "' r='45' fill='";
+            cell[3] = _checker;
+            cell[4] = "'></circle>";
+
+            return string(abi.encodePacked(cell[0], cell[1], cell[2], cell[3], cell[4]));
+        }
     }
 
     function getChecker(

@@ -21,7 +21,10 @@ interface IMetadata {
     function generateBoard() external pure returns (string memory);
 
     function generateCell(
+        uint256 _x,
+        uint256 _y,
         uint256 _row,
+        uint256 _col,
         string memory _checker
     ) external pure returns (string memory);
 
@@ -29,6 +32,8 @@ interface IMetadata {
 
     function generateSVG(
         uint256 _gameId,
+        uint256 _row,
+        uint256 _col,
         address _player1,
         address _player2,
         address[COL][ROW] memory _board

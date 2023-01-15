@@ -2,7 +2,7 @@
 
 Just a friendly on-chain game of Connect Four.
 
-<svg width="200px" viewBox="0 0 700 600" xmlns="http://www.w3.org/2000/svg"><defs><pattern id="cell-pattern" patternUnits="userSpaceOnUse" width="100" height="100"><circle cx="50" cy="50" r="45" fill="black"></circle></pattern><mask id="cell-mask"><rect width="100" height="600" fill="white"></rect><rect width="100" height="600" fill="url(#cell-pattern)"></rect></mask></defs><svg x="0" y="0"><circle cx="50" cy="550" r="45" fill="#29335c"></circle><rect width="100" height="600" fill="#F3A712" mask="url(#cell-mask)"></rect></svg><svg x="100" y="0"><circle cx="50" cy="550" r="45" fill="#DB2B39"></circle><rect width="100" height="600" fill="#F3A712" mask="url(#cell-mask)"></rect></svg><svg x="200" y="0"><circle cx="50" cy="550" r="45" fill="#29335c"></circle><rect width="100" height="600" fill="#F3A712" mask="url(#cell-mask)"></rect></svg><svg x="300" y="0"><circle cx="50" cy="550" r="45" fill="#DB2B39"></circle><rect width="100" height="600" fill="#F3A712" mask="url(#cell-mask)"></rect></svg><svg x="400" y="0"><circle cx="50" cy="550" r="45" fill="#29335c"></circle><rect width="100" height="600" fill="#F3A712" mask="url(#cell-mask)"></rect></svg><svg x="500" y="0"><circle cx="50" cy="550" r="45" fill="#DB2B39"></circle><rect width="100" height="600" fill="#F3A712" mask="url(#cell-mask)"></rect></svg><svg x="600" y="0"><circle cx="50" cy="550" r="45" fill="#29335c"></circle><rect width="100" height="600" fill="#F3A712" mask="url(#cell-mask)"></rect></svg></svg>
+<img src="images/board.svg">
 
 
 ### `Challenge`
@@ -29,7 +29,7 @@ Just a friendly on-chain game of Connect Four.
 > Executes next placement on an active board
 
 - Each game has a maximum number of **42** possible moves.
-- Every move dynamically updates the metadata of the NFT on-chain and the changes reflect immediately on the game board.
+- Every move dynamically updates the metadata and SVG image of the NFT on-chain.
 - Players can win by getting **4** in a row *horizontally*, *vertically* or *diagonally*.
 - In the event of a successful board (`Success`), the winning player is transferred the game board NFT.
 - In the event of a tie board (`Draw`), the game board NFT will remain with the `Connectors` contract.

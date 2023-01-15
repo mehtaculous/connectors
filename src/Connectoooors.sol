@@ -26,7 +26,7 @@ contract Connectoooors is IConnectoooors, ERC721, ERC721Holder, Ownable {
     using Strings for uint160;
     using Strings for uint256;
     /// @dev Interface identifier for royalty standard
-    bytes4 private constant _INTERFACE_ID_ERC2981 = 0x2a55205a;
+    bytes4 constant _INTERFACE_ID_ERC2981 = 0x2a55205a;
     /// @dev Maximum supply of winning game boards
     uint256 public constant MAX_SUPPLY = 100;
     /// @notice Address of Metadata contract
@@ -80,13 +80,13 @@ contract Connectoooors is IConnectoooors, ERC721, ERC721Holder, Ownable {
     function begin(uint256 _gameId, uint256 _row, uint256 _col) external payable {
         // Reverts if game does not exist
         if (_gameId == 0 || _gameId > currentId) revert InvalidGame();
-        // Reverts if payment amount is incorrect
-        if (msg.value != fee) revert InvalidPayment();
         Game storage game = games[_gameId];
         // Reverts if game state is not Inactive
         if (State.INACTIVE != game.state) revert InvalidState();
         // Reverts if caller is not authorized to execute move
         if (msg.sender != game.turn) revert NotAuthorized();
+        // Reverts if payment amount is incorrect
+        if (msg.value != fee) revert InvalidPayment();
 
         // Sets game state to Active
         game.state = State.ACTIVE;
@@ -225,8 +225,7 @@ contract Connectoooors is IConnectoooors, ERC721, ERC721Holder, Ownable {
         address player1 = game.player1;
         address player2 = game.player2;
         string memory name = string.concat("Connectoooor #", _tokenId.toString());
-        string
-            memory description = "Just a friendly on-chain game of Connect Four. Your move anon.";
+        string memory description = "Just a friendly on-chain game of Connect Four. Your move anon.";
         string memory playerTraits = generatePlayerTraits(_tokenId, player1, player2);
         string memory gameTraits = generateGameTraits(game);
         string memory image = IMetadata(metadata).generateSVG(

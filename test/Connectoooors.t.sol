@@ -152,17 +152,6 @@ contract ConnectoooorsTest is Test {
         _begin(eve, ++gameId, row, _col, FEE);
     }
 
-    function testBeginRevertInvalidPayment(uint256 _col) public {
-        // setup
-        testChallengeSuccess();
-        _setFee(address(this), 1 ether);
-        _col = _boundCol(_col, 0, COL);
-        // revert
-        vm.expectRevert(INVALID_PAYMENT_ERROR);
-        // execute
-        _begin(eve, gameId, row, _col, FEE - 1);
-    }
-
     function testBeginRevertInvalidState(uint256 _col) public {
         // setup
         testBeginSuccess(_col);
@@ -181,6 +170,17 @@ contract ConnectoooorsTest is Test {
         vm.expectRevert(NOT_AUTHORIZED_ERROR);
         // execute
         _begin(bob, gameId, row, _col, FEE);
+    }
+
+    function testBeginRevertInvalidPayment(uint256 _col) public {
+        // setup
+        testChallengeSuccess();
+        _setFee(address(this), 1 ether);
+        _col = _boundCol(_col, 0, COL);
+        // revert
+        vm.expectRevert(INVALID_PAYMENT_ERROR);
+        // execute
+        _begin(eve, gameId, row, _col, FEE - 1);
     }
 
     /// ================

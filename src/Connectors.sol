@@ -15,7 +15,6 @@ pragma solidity 0.8.13;
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/utils/ERC721Holder.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
-
 import "src/Metadata.sol";
 import "src/interfaces/IConnectors.sol";
 
@@ -47,6 +46,8 @@ contract Connectors is IConnectors, ERC721, ERC721Holder, Ownable {
     /// @dev Game can only become active once opponent calls begin
     /// @param _opponent Address of opponent
     function challenge(address _opponent) external payable {
+        // Reverts if caller or opponent is a smart contract
+        if (msg.sender != tx.origin || _isContract(_opponent)) revert InvalidPlayer();
         // Reverts if payment amount is incorrect
         if (msg.value != fee) revert InvalidPayment();
         // Reverts if caller is also the opponent
@@ -69,10 +70,10 @@ contract Connectors is IConnectors, ERC721, ERC721Holder, Ownable {
     }
 
     /// @notice Begins inactive game and executes first move on board
-    /// @dev Row and Column values are zero-indexed
+    /// @dev Row and Column numbers are zero-indexed
     /// @param _gameId ID of the game
-    /// @param _row Value of row on board
-    /// @param _col Value of column on board
+    /// @param _row Value of row number on board
+    /// @param _col Value of column number on board
     function begin(uint256 _gameId, uint256 _row, uint256 _col) external payable {
         // Reverts if game does not exist
         if (_gameId == 0 || _gameId > currentId) revert InvalidGame();
@@ -95,10 +96,10 @@ contract Connectors is IConnectors, ERC721, ERC721Holder, Ownable {
     }
 
     /// @notice Executes new move on board
-    /// @dev Row and Column values are based on zero-indexed
+    /// @dev Row and Column numbers are zero-indexed
     /// @param _gameId ID of the game
-    /// @param _row Value of row on board
-    /// @param _col Value of column on board
+    /// @param _row Value of row number on board
+    /// @param _col Value of column number on board
     function move(
         uint256 _gameId,
         uint256 _row,
@@ -170,7 +171,7 @@ contract Connectors is IConnectors, ERC721, ERC721Holder, Ownable {
         }
     }
 
-    /// @notice Sets fee required to challenge or begin new game
+    /// @notice Sets fee amount required to challenge or begin new game
     /// @param _fee Amount in ether
     function setFee(uint256 _fee) external payable onlyOwner {
         fee = _fee;
@@ -185,7 +186,7 @@ contract Connectors is IConnectors, ERC721, ERC721Holder, Ownable {
 
     /// @notice Gets the entire column for a given row
     /// @param _gameId ID of the game
-    /// @param _row Value of row on board
+    /// @param _row Value of row number on board
     function getRow(uint256 _gameId, uint256 _row) external view returns (address[COL] memory) {
         Game memory game = games[_gameId];
         return game.board[_row];
@@ -415,5 +416,14 @@ contract Connectors is IConnectors, ERC721, ERC721Holder, Ownable {
         }
 
         if (counter > 2) result = Strat.DESCENDING;
+    }
+
+    /// @dev Checks if given address is a smart contract
+    function _isContract(address _addr) internal view returns (bool) {
+        uint256 size;
+        assembly {
+            size := extcodesize(_addr)
+        }
+        return size > 0;
     }
 }

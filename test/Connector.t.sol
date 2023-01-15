@@ -2,7 +2,6 @@
 pragma solidity ^0.8.13;
 
 import "forge-std/Test.sol";
-
 import "src/Connectors.sol";
 import "src/interfaces/IConnectors.sol";
 
@@ -38,11 +37,21 @@ contract ConnectorsTest is Test {
     bytes4 INVALID_MATCHUP_ERROR = IConnectors.InvalidMatchup.selector;
     bytes4 INVALID_MOVE_ERROR = IConnectors.InvalidMove.selector;
     bytes4 INVALID_PAYMENT_ERROR = IConnectors.InvalidPayment.selector;
+    bytes4 INVALID_PLAYER_ERROR = IConnectors.InvalidPlayer.selector;
     bytes4 INVALID_STATE_ERROR = IConnectors.InvalidState.selector;
     bytes4 NOT_AUTHORIZED_ERROR = IConnectors.NotAuthorized.selector;
 
+    /// =====================
+    /// ===== MODIFIERS =====
+    /// =====================
     modifier prank(address _sender) {
         vm.startPrank(_sender);
+        _;
+        vm.stopPrank();
+    }
+
+    modifier prankOrigin(address _sender, address _origin) {
+        vm.startPrank(_sender, _origin);
         _;
         vm.stopPrank();
     }
@@ -60,11 +69,11 @@ contract ConnectorsTest is Test {
         vm.deal(eve, ETH_BALANCE);
         vm.deal(address(this), ETH_BALANCE);
 
+        vm.label(address(connectors), "Connectors");
+        vm.label(address(this), "ConnectorsTest");
+        vm.label(metadata, "Metadata");
         vm.label(bob, "Bob");
         vm.label(eve, "Eve");
-        vm.label(metadata, "Metadata");
-        vm.label(address(connectors), "connectors");
-        vm.label(address(this), "connectorsTest");
     }
 
     /// =====================
@@ -80,6 +89,20 @@ contract ConnectorsTest is Test {
         assertEq(turn, eve);
         assertEq(uint256(state), uint256(State.INACTIVE));
         assertEq(connectors.ownerOf(gameId), address(connectors));
+    }
+
+    function testChallengeRevertInvalidPlayerOrigin() public {
+        // revert
+        vm.expectRevert(INVALID_PLAYER_ERROR);
+        // execute
+        connectors.challenge(bob);
+    }
+
+    function testChallengeRevertInvalidPlayerContract() public {
+        // revert
+        vm.expectRevert(INVALID_PLAYER_ERROR);
+        // execute
+        _challenge(bob, address(this), fee);
     }
 
     function testChallengeRevertInvalidPayment() public {
@@ -433,7 +456,11 @@ contract ConnectorsTest is Test {
         }
     }
 
-    function _challenge(address _sender, address _opponent, uint256 _fee) internal prank(_sender) {
+    function _challenge(
+        address _sender,
+        address _opponent,
+        uint256 _fee
+    ) internal prankOrigin(_sender, _sender) {
         connectors.challenge{value: _fee}(_opponent);
         _setGame();
         _setState(gameId, row, col);

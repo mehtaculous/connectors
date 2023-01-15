@@ -34,6 +34,7 @@ interface IConnectors {
     error InvalidMatchup();
     error InvalidMove();
     error InvalidPayment();
+    error InvalidPlayer();
     error InvalidState();
     error NotAuthorized();
 

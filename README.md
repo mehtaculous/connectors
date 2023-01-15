@@ -7,16 +7,16 @@ Just a friendly on-chain game of Connect Four.
 
 ### `Challenge`
 
-> Creates a new game and mints a new game board NFT
+> Creates a new game and mints a new token
 
 - Challenging an opponent mints a new ERC-721 token of the game board.
-- Follow along for a visual status of the game board by visiting any [marketplace](https://opensea.io/) that supports on-chain art.
+- Follow along for a visual status of the game board by visiting any [marketplace](https://testnets.opensea.io/collection/connectors-v2) that supports on-chain art.
 
 ### `Begin`
 
 > Activates a new game and executes the first move on the game board
 
-- The opponent must first begin the game before moves can be made.
+- The opponent must first begin the game before any moves can be made.
 - Each board consists of **6** Rows and **7** Columns that are *zero-indexed*.
 - The `row` values range from **0 - 5**.
 - The `col` values range from **0 - 6**.
@@ -46,8 +46,8 @@ Just a friendly on-chain game of Connect Four.
 
 | Name            | Address                                                                                                                       |
 | --------------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| `Connectors.sol`    | [](https://goerli.etherscan.io/address/) |
-| `Metadata.sol`      | [](https://goerli.etherscan.io/address/) |
+| `Connectors.sol`    | [0x8797681E553197442accabBC85Dc30A2eE4b6f87](https://goerli.etherscan.io/address/0x8797681E553197442accabBC85Dc30A2eE4b6f87) |
+| `Metadata.sol`      | [0xD6237A39Dd8D3c68fC9178F445a2Ee84936356bb](https://goerli.etherscan.io/address/0xD6237A39Dd8D3c68fC9178F445a2Ee84936356bb) |
 
 
 ### Gas Report
@@ -55,13 +55,14 @@ Just a friendly on-chain game of Connect Four.
 | Connectors.sol                         |                 |        |        |        |         |
 |----------------------------------------|-----------------|--------|--------|--------|---------|
 | Deployment Cost                        | Deployment Size |        |        |        |         |
-| 4569809                                | 22940           |        |        |        |         |
+| 4546183                                | 22829           |        |        |        |         |
 | Function Name                          | min             | avg    | median | max    | # calls |
-| begin                                  | 524             | 44755  | 49854  | 69754  | 19      |
-| challenge                              | 469             | 189993 | 227847 | 227847 | 24      |
-| games                                  | 1471            | 2934   | 1471   | 13471  | 123     |
-| getRow                                 | 10905           | 27571  | 10905  | 94905  | 99      |
+| begin                                  | 524             | 43913  | 49854  | 67754  | 19      |
+| challenge                              | 469             | 189975 | 227825 | 227825 | 24      |
+| games                                  | 1449            | 2912   | 1449   | 13449  | 123     |
+| getRow                                 | 10905           | 18399  | 10905  | 94905  | 99      |
 | move                                   | 548             | 34826  | 29098  | 114007 | 81      |
 | setFee                                 | 2508            | 19689  | 24510  | 24510  | 5       |
-| tokenURI                               | 181846          | 254915 | 216926 | 568236 | 8       |
-| withdraw                               | 7520            | 7520   | 7520   | 7520   | 1       |
+| toggleAnimate                          | 2474            | 6573   | 6573   | 10673  | 2       |
+| tokenURI                               | 168176          | 225106 | 240240 | 564706 | 29      |
+| withdraw                               | 7498            | 7498   | 7498   | 7498   | 1       |

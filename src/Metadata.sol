@@ -10,6 +10,7 @@ contract Metadata is IMetadata, Ownable {
     string public constant BLUE = "#29335c";
     string public constant RED = "#DB2B39";
     string public constant YELLOW = "#F3A712";
+    bool public animate;
     string[] public palette = [YELLOW, BLUE, RED];
     mapping(uint256 => Render) public renders;
 
@@ -31,54 +32,49 @@ contract Metadata is IMetadata, Ownable {
         address[COL][ROW] memory _board
     ) external view returns (string memory svg) {
         Render memory render = renders[_gameId];
-        string memory board = generateBoard();
+        string memory board = _generateBoard();
         for (uint256 y; y < COL; ++y) {
-            board = string.concat(board, generateGrid(y));
+            board = string.concat(board, _generateGrid(y));
             for (uint256 x; x < ROW; ++x) {
                 if (_board[x][y] == _player1) {
-                    board = string.concat(board, generateCell(x, y, _row, _col, render.player1));
+                    board = string.concat(board, _generateCell(x, y, _row, _col, render.player1));
                 } else if (_board[x][y] == _player2) {
-                    board = string.concat(board, generateCell(x, y, _row, _col, render.player2));
+                    board = string.concat(board, _generateCell(x, y, _row, _col, render.player2));
                 }
             }
-            board = string.concat(board, generateBase(render.base));
+            board = string.concat(board, _generateBase(render.base));
         }
         svg = string.concat(board, "</svg>");
     }
 
-    function generateBoard() public pure returns (string memory) {
-        return
-            "<svg width='600px' viewBox='0 0 700 600' xmlns='http://www.w3.org/2000/svg'><defs><pattern id='cell-pattern' patternUnits='userSpaceOnUse' width='100' height='100'><circle cx='50' cy='50' r='45' fill='black'></circle></pattern><mask id='cell-mask'><rect width='100' height='600' fill='white'></rect><rect width='100' height='600' fill='url(#cell-pattern)'></rect></mask></defs>";
+    function toggleAnimate() external onlyOwner {
+        animate = !animate;
     }
 
-    function generateGrid(uint256 _col) public pure returns (string memory) {
-        uint256 x = _col * 100;
-        string[3] memory grid;
-        grid[0] = "<svg x='";
-        grid[1] = x.toString();
-        grid[2] = "' y='0'>";
-
-        return string(abi.encodePacked(grid[0], grid[1], grid[2]));
+    function getChecker(
+        uint256 _gameId
+    ) external view returns (string memory player1, string memory player2) {
+        Render memory render = renders[_gameId];
+        player1 = _getColor(render.player1);
+        player2 = _getColor(render.player2);
     }
 
-    function generateBase(string memory _base) public pure returns (string memory) {
-        string[3] memory base;
-        base[0] = "<rect width='100' height='600' fill='";
-        base[1] = _base;
-        base[2] = "' mask='url(#cell-mask)'></rect></svg>";
-
-        return string(abi.encodePacked(base[0], base[1], base[2]));
+    function getStatus(State _state) external pure returns (string memory status) {
+        if (_state == State.INACTIVE) status = "Inactive";
+        else if (_state == State.ACTIVE) status = "Active";
+        else if (_state == State.SUCCESS) status = "Success";
+        else status = "Draw";
     }
 
-    function generateCell(
+    function _generateCell(
         uint256 _x,
         uint256 _y,
         uint256 _row,
         uint256 _col,
         string memory _checker
-    ) public pure returns (string memory) {
+    ) internal view returns (string memory) {
         uint256 cy = 550 - (_x * 100);
-        if (_x == _row && _y == _col) {
+        if (_x == _row && _y == _col && animate) {
             string[7] memory cell;
             uint256 duration = (cy / 100 == 0) ? 1 : cy / 100;
             string memory secs = string.concat(duration.toString(), "s");
@@ -106,19 +102,28 @@ contract Metadata is IMetadata, Ownable {
         }
     }
 
-    function getChecker(
-        uint256 _gameId
-    ) external view returns (string memory player1, string memory player2) {
-        Render memory render = renders[_gameId];
-        player1 = _getColor(render.player1);
-        player2 = _getColor(render.player2);
+    function _generateBoard() internal pure returns (string memory) {
+        return
+            "<svg width='600px' viewBox='0 0 700 600' xmlns='http://www.w3.org/2000/svg'><defs><pattern id='cell-pattern' patternUnits='userSpaceOnUse' width='100' height='100'><circle cx='50' cy='50' r='45' fill='black'></circle></pattern><mask id='cell-mask'><rect width='100' height='600' fill='white'></rect><rect width='100' height='600' fill='url(#cell-pattern)'></rect></mask></defs>";
     }
 
-    function getStatus(State _state) external pure returns (string memory status) {
-        if (_state == State.INACTIVE) status = "Inactive";
-        else if (_state == State.ACTIVE) status = "Active";
-        else if (_state == State.SUCCESS) status = "Success";
-        else status = "Draw";
+    function _generateGrid(uint256 _col) internal pure returns (string memory) {
+        uint256 x = _col * 100;
+        string[3] memory grid;
+        grid[0] = "<svg x='";
+        grid[1] = x.toString();
+        grid[2] = "' y='0'>";
+
+        return string(abi.encodePacked(grid[0], grid[1], grid[2]));
+    }
+
+    function _generateBase(string memory _base) internal pure returns (string memory) {
+        string[3] memory base;
+        base[0] = "<rect width='100' height='600' fill='";
+        base[1] = _base;
+        base[2] = "' mask='url(#cell-mask)'></rect></svg>";
+
+        return string(abi.encodePacked(base[0], base[1], base[2]));
     }
 
     function _getColor(string memory _player) internal pure returns (string memory checker) {

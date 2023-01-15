@@ -181,6 +181,11 @@ contract Connectors is IConnectors, ERC721, ERC721Holder, Ownable {
         fee = _fee;
     }
 
+    /// @notice Toggles animation of SVG image art
+    function toggleAnimate() external payable onlyOwner {
+        IMetadata(metadata).toggleAnimate();
+    }
+
     /// @notice Withdraws balance from contract
     /// @param _to Target address transferring balance to
     function withdraw(address payable _to) external payable onlyOwner {

@@ -270,6 +270,23 @@ contract ConnectorsTest is Test {
         _setFee(bob, _fee);
     }
 
+    /// ==========================
+    /// ===== TOGGLE ANIMATE =====
+    /// ==========================
+    function testToggleAnimateSuccess() public {
+        // execute
+        _toggleAnimate(address(this));
+        // assert
+        assertTrue(IMetadata(metadata).animate());
+    }
+
+    function testToggleAnimateRevertNotOwner() public {
+        // revert
+        vm.expectRevert();
+        // execute
+        _toggleAnimate(bob);
+    }
+
     /// ====================
     /// ===== WITHDRAW =====
     /// ====================
@@ -497,6 +514,10 @@ contract ConnectorsTest is Test {
     function _setFee(address _sender, uint256 _fee) internal prank(_sender) {
         connectors.setFee(_fee);
         fee = _fee;
+    }
+
+    function _toggleAnimate(address _sender) internal prank(_sender) {
+        connectors.toggleAnimate();
     }
 
     function _withdraw(address _sender, address payable _to) internal prank(_sender) {

@@ -74,13 +74,11 @@ interface IConnectors {
 
     function metadata() external view returns (address);
 
-    function move(
-        uint256 _gameId,
-        uint256 _row,
-        uint256 _col
-    ) external payable returns (Strat result);
+    function move(uint256 _gameId, uint256 _row, uint256 _col) external payable returns (Strat);
 
     function setFee(uint256 _fee) external payable;
+
+    function toggleAnimate() external payable;
 
     function totalSupply() external view returns (uint256);
 

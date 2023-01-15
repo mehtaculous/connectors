@@ -7,26 +7,15 @@ import "src/Connectors.sol";
 contract DeployScript is Script {
     Connectors connectors;
     address metadata;
-    uint256 gameId;
-
-    address constant OPPONENT = 0x16107A92e44E105b135d5F84D5730E9EAaa167B7;
 
     function run() public {
         vm.startBroadcast();
         deploy();
-        challenge();
-        challenge();
-        challenge();
         vm.stopBroadcast();
     }
 
     function deploy() public {
         connectors = new Connectors();
         metadata = connectors.metadata();
-    }
-
-    function challenge() public {
-        connectors.challenge(OPPONENT);
-        gameId = connectors.currentId();
     }
 }

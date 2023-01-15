@@ -16,19 +16,7 @@ interface IMetadata {
 
     function YELLOW() external view returns (string memory);
 
-    function generateBase(string memory _base) external pure returns (string memory);
-
-    function generateBoard() external pure returns (string memory);
-
-    function generateCell(
-        uint256 _x,
-        uint256 _y,
-        uint256 _row,
-        uint256 _col,
-        string memory _checker
-    ) external pure returns (string memory);
-
-    function generateGrid(uint256 _col) external pure returns (string memory);
+    function animate() external view returns (bool);
 
     function generateSVG(
         uint256 _gameId,
@@ -37,13 +25,15 @@ interface IMetadata {
         address _player1,
         address _player2,
         address[COL][ROW] memory _board
-    ) external view returns (string memory svg);
+    ) external view returns (string memory);
 
     function getChecker(uint256 _gameId) external view returns (string memory, string memory);
 
-    function getStatus(State _state) external view returns (string memory status);
+    function getStatus(State _state) external view returns (string memory);
 
     function register(uint256 _gameId) external;
 
     function renders(uint256) external view returns (string memory, string memory, string memory);
+
+    function toggleAnimate() external;
 }

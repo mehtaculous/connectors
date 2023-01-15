@@ -2,10 +2,10 @@
 pragma solidity ^0.8.13;
 
 import "forge-std/Script.sol";
-import "src/Connectors.sol";
+import "src/Connectoooors.sol";
 
 contract DeployScript is Script {
-    Connectors connectors;
+    Connectoooors connectors;
     address metadata;
 
     function run() public {
@@ -15,7 +15,7 @@ contract DeployScript is Script {
     }
 
     function deploy() public {
-        connectors = new Connectors();
+        connectors = new Connectoooors();
         metadata = connectors.metadata();
     }
 }

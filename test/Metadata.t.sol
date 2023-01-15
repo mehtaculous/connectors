@@ -2,12 +2,12 @@
 pragma solidity ^0.8.13;
 
 import "forge-std/Test.sol";
-import "src/Connectors.sol";
+import "src/Connectoooors.sol";
 import "src/interfaces/IMetadata.sol";
 
 contract MetadataTest is Test {
     // Contracts
-    Connectors connectors;
+    Connectoooors connectors;
 
     // Users
     address bob = address(111);
@@ -47,11 +47,11 @@ contract MetadataTest is Test {
     /// ===== SETUP =====
     /// =================
     function setUp() public {
-        connectors = new Connectors();
+        connectors = new Connectoooors();
         metadata = connectors.metadata();
         initializePalette();
 
-        vm.label(address(connectors), "Connectors");
+        vm.label(address(connectors), "Connectoooors");
         vm.label(metadata, "Metadata");
         vm.label(address(this), "MetadataTest");
         vm.label(bob, "Bob");

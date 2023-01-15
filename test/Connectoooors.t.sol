@@ -2,12 +2,12 @@
 pragma solidity ^0.8.13;
 
 import "forge-std/Test.sol";
-import "src/Connectors.sol";
-import "src/interfaces/IConnectors.sol";
+import "src/Connectoooors.sol";
+import "src/interfaces/IConnectoooors.sol";
 
-contract ConnectorsTest is Test {
+contract ConnectoooorsTest is Test {
     // Contracts
-    Connectors connectors;
+    Connectoooors connectors;
 
     // Users
     address bob = address(111);
@@ -33,13 +33,13 @@ contract ConnectorsTest is Test {
     uint256 constant ETH_BALANCE = 100 ether;
 
     // Errors
-    bytes4 INVALID_GAME_ERROR = IConnectors.InvalidGame.selector;
-    bytes4 INVALID_MATCHUP_ERROR = IConnectors.InvalidMatchup.selector;
-    bytes4 INVALID_MOVE_ERROR = IConnectors.InvalidMove.selector;
-    bytes4 INVALID_PAYMENT_ERROR = IConnectors.InvalidPayment.selector;
-    bytes4 INVALID_PLAYER_ERROR = IConnectors.InvalidPlayer.selector;
-    bytes4 INVALID_STATE_ERROR = IConnectors.InvalidState.selector;
-    bytes4 NOT_AUTHORIZED_ERROR = IConnectors.NotAuthorized.selector;
+    bytes4 INVALID_GAME_ERROR = IConnectoooors.InvalidGame.selector;
+    bytes4 INVALID_MATCHUP_ERROR = IConnectoooors.InvalidMatchup.selector;
+    bytes4 INVALID_MOVE_ERROR = IConnectoooors.InvalidMove.selector;
+    bytes4 INVALID_PAYMENT_ERROR = IConnectoooors.InvalidPayment.selector;
+    bytes4 INVALID_PLAYER_ERROR = IConnectoooors.InvalidPlayer.selector;
+    bytes4 INVALID_STATE_ERROR = IConnectoooors.InvalidState.selector;
+    bytes4 NOT_AUTHORIZED_ERROR = IConnectoooors.NotAuthorized.selector;
 
     /// =====================
     /// ===== MODIFIERS =====
@@ -62,15 +62,15 @@ contract ConnectorsTest is Test {
     /// ===== SETUP =====
     /// =================
     function setUp() public {
-        connectors = new Connectors();
+        connectors = new Connectoooors();
         metadata = connectors.metadata();
 
         vm.deal(bob, ETH_BALANCE);
         vm.deal(eve, ETH_BALANCE);
         vm.deal(address(this), ETH_BALANCE);
 
-        vm.label(address(connectors), "Connectors");
-        vm.label(address(this), "ConnectorsTest");
+        vm.label(address(connectors), "Connectoooors");
+        vm.label(address(this), "ConnectoooorsTest");
         vm.label(metadata, "Metadata");
         vm.label(bob, "Bob");
         vm.label(eve, "Eve");

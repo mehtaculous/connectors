@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.13;
 
+/// @title Connectoooors
+
 /*********************************
  *           0       0           *
  * |░░░|░░░|░░░|░░░|░░░|░░░|░░░| *
@@ -16,15 +18,14 @@ import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/utils/ERC721Holder.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "src/Metadata.sol";
-import "src/interfaces/IConnectors.sol";
+import "src/interfaces/IConnectoooors.sol";
 
-/// @title Connectors
 /// @author swa.eth
 /// @notice Just a friendly on-chain game of Connect Four
-contract Connectors is IConnectors, ERC721, ERC721Holder, Ownable {
+contract Connectoooors is IConnectoooors, ERC721, ERC721Holder, Ownable {
     using Strings for uint160;
     using Strings for uint256;
-    /// @dev Maximum number of possible games won
+    /// @dev Maximum number of winning game boards
     uint256 public constant MAX_SUPPLY = 100;
     /// @notice Address of Metadata contract
     address public immutable metadata;
@@ -38,7 +39,7 @@ contract Connectors is IConnectors, ERC721, ERC721Holder, Ownable {
     mapping(uint256 => Game) public games;
 
     /// @dev Deploys new Metadata contract
-    constructor() payable ERC721("Connectors", "C4") {
+    constructor() payable ERC721("Connectoooors", "C4") {
         metadata = address(new Metadata());
     }
 
@@ -72,8 +73,8 @@ contract Connectors is IConnectors, ERC721, ERC721Holder, Ownable {
     /// @notice Activates new game and executes first move on board
     /// @dev Row and Column numbers are zero-indexed
     /// @param _gameId ID of the game
-    /// @param _row Placement of row number on board (0-5)
-    /// @param _col Placement of column number on board (0-6)
+    /// @param _row Value of row placement on board (0-5)
+    /// @param _col Value of column placement on board (0-6)
     function begin(uint256 _gameId, uint256 _row, uint256 _col) external payable {
         // Reverts if game does not exist
         if (_gameId == 0 || _gameId > currentId) revert InvalidGame();
@@ -98,8 +99,8 @@ contract Connectors is IConnectors, ERC721, ERC721Holder, Ownable {
     /// @notice Executes next placement on active board
     /// @dev Row and Column numbers are zero-indexed
     /// @param _gameId ID of the game
-    /// @param _row Placement of row number on board (0-5)
-    /// @param _col Placement of column number on board (0-6)
+    /// @param _row Value of row placement on board (0-5)
+    /// @param _col Value of column placement on board (0-6)
     function move(
         uint256 _gameId,
         uint256 _row,
@@ -159,10 +160,10 @@ contract Connectors is IConnectors, ERC721, ERC721Holder, Ownable {
                 _safeMint(msg.sender, _gameId);
             }
         } else {
-            // Updates player turn based on current player
+            // Updates player turn based on caller
             game.turn = (msg.sender == game.player1) ? game.player2 : game.player1;
 
-            // Checks if number of moves has reached maximum possible moves
+            // Checks if number of moves has reached maximum moves
             if (moves == ROW * COL) {
                 // Updates state of game to draw
                 game.state = State.DRAW;
@@ -207,7 +208,7 @@ contract Connectors is IConnectors, ERC721, ERC721Holder, Ownable {
         address[COL][ROW] memory board = game.board;
         address player1 = game.player1;
         address player2 = game.player2;
-        string memory name = string.concat("Board #", _tokenId.toString());
+        string memory name = string.concat("Connectoooor #", _tokenId.toString());
         string memory description = "Just a friendly on-chain game of Connect Four.";
         string memory playerTraits = generatePlayerTraits(_tokenId, player1, player2);
         string memory gameTraits = generateGameTraits(game);

@@ -31,7 +31,7 @@ struct Game {
     address[COL][ROW] board;
 }
 
-interface IConnectors {
+interface IConnectoooors {
     error InvalidGame();
     error InvalidMatchup();
     error InvalidMove();

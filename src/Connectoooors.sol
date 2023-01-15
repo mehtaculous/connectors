@@ -16,6 +16,7 @@ import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/utils/ERC721Holder.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "src/Metadata.sol";
+
 import "src/interfaces/IConnectoooors.sol";
 
 /// @title Connectoooors
@@ -24,7 +25,9 @@ import "src/interfaces/IConnectoooors.sol";
 contract Connectoooors is IConnectoooors, ERC721, ERC721Holder, Ownable {
     using Strings for uint160;
     using Strings for uint256;
-    /// @dev Maximum number of winning game boards
+    /// @dev Interface identifier for royalty standard
+    bytes4 private constant _INTERFACE_ID_ERC2981 = 0x2a55205a;
+    /// @dev Maximum supply of winning game boards
     uint256 public constant MAX_SUPPLY = 100;
     /// @notice Address of Metadata contract
     address public immutable metadata;
@@ -32,7 +35,7 @@ contract Connectoooors is IConnectoooors, ERC721, ERC721Holder, Ownable {
     uint256 public currentId;
     /// @notice Current number of games won
     uint256 public totalSupply;
-    /// @notice Ether amount required to play per player
+    /// @notice Ether amount required per player to play
     uint256 public fee = 0.042 ether;
     /// @notice Mapping of game ID to game info
     mapping(uint256 => Game) public games;
@@ -42,7 +45,7 @@ contract Connectoooors is IConnectoooors, ERC721, ERC721Holder, Ownable {
         metadata = address(new Metadata());
     }
 
-    /// @notice Creates new game and mints new board
+    /// @notice Creates new game and mints new game board
     /// @dev Game can only become active once opponent calls begin
     /// @param _opponent Address of opponent
     function challenge(address _opponent) external payable {
@@ -199,6 +202,20 @@ contract Connectoooors is IConnectoooors, ERC721, ERC721Holder, Ownable {
         return game.board[_row];
     }
 
+    /// @notice Returns royalty information for secondary sales
+    function royaltyInfo(
+        uint256 /* _id */,
+        uint256 _salePrice
+    ) external view returns (address receiver, uint256 royalty) {
+        receiver = owner();
+        royalty = (_salePrice * 1000) / 10000;
+    }
+
+    /// @notice Supports interface for ERC-165 implementation
+    function supportsInterface(bytes4 interfaceId) public view override returns (bool) {
+        return interfaceId == _INTERFACE_ID_ERC2981 || super.supportsInterface(interfaceId); // ERC165 Interface ID for ERC2981
+    }
+
     /// @notice Gets metadata of token in JSON format
     function tokenURI(uint256 _tokenId) public view virtual override returns (string memory) {
         _requireMinted(_tokenId);
@@ -208,7 +225,8 @@ contract Connectoooors is IConnectoooors, ERC721, ERC721Holder, Ownable {
         address player1 = game.player1;
         address player2 = game.player2;
         string memory name = string.concat("Connectoooor #", _tokenId.toString());
-        string memory description = "Just a friendly on-chain game of Connect Four. Your move anon.";
+        string
+            memory description = "Just a friendly on-chain game of Connect Four. Your move anon.";
         string memory playerTraits = generatePlayerTraits(_tokenId, player1, player2);
         string memory gameTraits = generateGameTraits(game);
         string memory image = IMetadata(metadata).generateSVG(

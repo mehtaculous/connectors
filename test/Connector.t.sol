@@ -13,8 +13,8 @@ contract ConnectorTest is Test {
     Connector connector;
 
     // Users
-    address alice = address(111);
     address bob = address(222);
+    address eve = address(333);
 
     // Game
     Game game;
@@ -28,12 +28,10 @@ contract ConnectorTest is Test {
 
     // State
     address metadata;
+    uint256 row;
     uint256 col;
     uint256 fee;
     uint256 gameId;
-    uint256 row;
-    uint256 totalSupply;
-    address[COL] column;
 
     // Constants
     uint256 constant ETH_BALANCE = 100 ether;
@@ -54,29 +52,35 @@ contract ConnectorTest is Test {
 
     receive() external payable {}
 
+    /// =================
+    /// ===== SETUP =====
+    /// =================
     function setUp() public {
         connector = new Connector();
         metadata = connector.metadata();
 
-        vm.deal(alice, ETH_BALANCE);
         vm.deal(bob, ETH_BALANCE);
+        vm.deal(eve, ETH_BALANCE);
         vm.deal(address(this), ETH_BALANCE);
 
-        vm.label(alice, "Alice");
         vm.label(bob, "Bob");
-        vm.label(address(connector), "Connector");
+        vm.label(eve, "Eve");
         vm.label(metadata, "Metadata");
+        vm.label(address(connector), "Connector");
         vm.label(address(this), "ConnectorTest");
     }
 
+    /// =====================
+    /// ===== CHALLENGE =====
+    /// =====================
     function testChallengeSuccess() public {
         // execute
-        _challenge(alice, bob, fee);
+        _challenge(bob, eve, fee);
         // assert
         assertEq(gameId, 1);
-        assertEq(player1, alice);
-        assertEq(player2, bob);
-        assertEq(turn, bob);
+        assertEq(player1, bob);
+        assertEq(player2, eve);
+        assertEq(turn, eve);
         assertEq(uint256(state), uint256(State.INACTIVE));
         assertEq(connector.ownerOf(gameId), address(connector));
     }
@@ -84,28 +88,32 @@ contract ConnectorTest is Test {
     function testChallengeRevertInvalidPayment() public {
         // setup
         _setFee(address(this), 1 ether);
+        // revert
         vm.expectRevert(INVALID_PAYMENT_ERROR);
         // execute
-        _challenge(alice, bob, fee - 1);
+        _challenge(bob, eve, fee - 1);
     }
 
     function testChallengeRevertInvalidMatchup() public {
         // revert
         vm.expectRevert(INVALID_MATCHUP_ERROR);
         // execute
-        _challenge(alice, alice, fee);
+        _challenge(bob, bob, fee);
     }
 
+    /// =================
+    /// ===== BEGIN =====
+    /// =================
     function testBeginSuccess(uint256 _col) public {
         // setup
         testChallengeSuccess();
         _col = _boundCol(_col, 0, COL);
         // execute
-        _begin(bob, gameId, row, _col, fee);
+        _begin(eve, gameId, row, _col, fee);
         // assert
-        assertEq(board[row][col], bob);
+        assertEq(board[row][col], eve);
         assertEq(moves, 1);
-        assertEq(turn, alice);
+        assertEq(turn, bob);
         assertEq(uint256(state), uint256(State.ACTIVE));
     }
 
@@ -116,7 +124,7 @@ contract ConnectorTest is Test {
         // revert
         vm.expectRevert(INVALID_GAME_ERROR);
         // execute
-        _begin(bob, ++gameId, row, _col, fee);
+        _begin(eve, ++gameId, row, _col, fee);
     }
 
     function testBeginRevertInvalidPayment(uint256 _col) public {
@@ -127,7 +135,7 @@ contract ConnectorTest is Test {
         // revert
         vm.expectRevert(INVALID_PAYMENT_ERROR);
         // execute
-        _begin(bob, gameId, row, _col, fee - 1);
+        _begin(eve, gameId, row, _col, fee - 1);
     }
 
     function testBeginRevertInvalidState(uint256 _col) public {
@@ -137,7 +145,7 @@ contract ConnectorTest is Test {
         // revert
         vm.expectRevert(INVALID_STATE_ERROR);
         // execute
-        _begin(alice, gameId, row, _col, fee);
+        _begin(eve, gameId, row, _col, fee);
     }
 
     function testBeginRevertNotAuthorized(uint256 _col) public {
@@ -147,19 +155,22 @@ contract ConnectorTest is Test {
         // revert
         vm.expectRevert(NOT_AUTHORIZED_ERROR);
         // execute
-        _begin(alice, gameId, row, _col, fee);
+        _begin(bob, gameId, row, _col, fee);
     }
 
+    /// ================
+    /// ===== MOVE =====
+    /// ================
     function testMoveSuccess() public {
         // setup
-        _challenge(alice, bob, fee);
-        _begin(bob, gameId, row, col, fee);
+        _challenge(bob, eve, fee);
+        _begin(eve, gameId, row, col, fee);
         // execute
-        _move(alice, gameId, row, col + 1);
+        _move(bob, gameId, row, col + 1);
         // assert
-        assertEq(board[row][col], alice);
+        assertEq(board[row][col], bob);
         assertEq(moves, 2);
-        assertEq(turn, bob);
+        assertEq(turn, eve);
     }
 
     function testMoveRevertInvalidGame(uint256 _col) public {
@@ -169,7 +180,7 @@ contract ConnectorTest is Test {
         // revert
         vm.expectRevert(INVALID_GAME_ERROR);
         // execute
-        _move(alice, ++gameId, row, _col);
+        _move(bob, ++gameId, row, _col);
     }
 
     function testMoveRevertInvalidState(uint256 _col) public {
@@ -189,7 +200,7 @@ contract ConnectorTest is Test {
         // revert
         vm.expectRevert(NOT_AUTHORIZED_ERROR);
         // execute
-        _move(bob, gameId, row, _col);
+        _move(eve, gameId, row, _col);
     }
 
     function testMoveRevertRowOutOfBounds(uint256 _col) public {
@@ -198,7 +209,7 @@ contract ConnectorTest is Test {
         // revert
         vm.expectRevert();
         // execute
-        _move(alice, gameId, ROW, col);
+        _move(bob, gameId, ROW, col);
     }
 
     function testMoveRevertColOutOfBounds(uint256 _col) public {
@@ -207,7 +218,7 @@ contract ConnectorTest is Test {
         // revert
         vm.expectRevert();
         // execute
-        _move(alice, gameId, row, COL);
+        _move(bob, gameId, row, COL);
     }
 
     function testMoveRevertInvalidMove(uint256 _col) public {
@@ -216,9 +227,12 @@ contract ConnectorTest is Test {
         // revert
         vm.expectRevert(INVALID_MOVE_ERROR);
         // execute
-        _move(alice, gameId, row, col);
+        _move(bob, gameId, row, col);
     }
 
+    /// ===================
+    /// ===== SET FEE =====
+    /// ===================
     function testSetFeeSuccess(uint256 _fee) public {
         // execute
         _setFee(address(this), _fee);
@@ -230,9 +244,12 @@ contract ConnectorTest is Test {
         // revert
         vm.expectRevert();
         // execute
-        _setFee(alice, _fee);
+        _setFee(bob, _fee);
     }
 
+    /// ====================
+    /// ===== WITHDRAW =====
+    /// ====================
     function testWithdraw(uint256 _col) public {
         // setup
         _setFee(address(this), 1 ether);
@@ -243,6 +260,9 @@ contract ConnectorTest is Test {
         assertEq(address(this).balance, ETH_BALANCE + (fee * 2));
     }
 
+    /// =====================
+    /// ===== TOKEN URI =====
+    /// =====================
     function testTokenURI() public {
         // setup
         testMoveSuccess();
@@ -251,8 +271,170 @@ contract ConnectorTest is Test {
     }
 
     /// ===================
+    /// ===== SUCCESS =====
+    /// ===================
+    function testHorizontal() public {
+        // setup
+        _challenge(bob, eve, fee);
+        _begin(eve, gameId, 0, 0, fee);
+        _move(bob, gameId, 1, 0);
+        _move(eve, gameId, 0, 1);
+        _move(bob, gameId, 2, 0);
+        _move(eve, gameId, 0, 2);
+        _move(bob, gameId, 3, 0);
+        _move(eve, gameId, 0, 3);
+        // assert
+        assertEq(turn, eve);
+        assertEq(moves, 7);
+        assertEq(uint256(state), uint256(State.SUCCESS));
+        assertEq(uint256(strat), uint256(Strat.HORIZONTAL));
+        assertEq(connector.ownerOf(gameId), eve);
+        assertEq(connector.totalSupply(), 1);
+        connector.tokenURI(gameId);
+    }
+
+    function testVertical() public {
+        // setup
+        _challenge(bob, eve, fee);
+        _begin(eve, gameId, 0, 0, fee);
+        _move(bob, gameId, 0, 1);
+        _move(eve, gameId, 1, 0);
+        _move(bob, gameId, 0, 2);
+        _move(eve, gameId, 2, 0);
+        _move(bob, gameId, 0, 3);
+        _move(eve, gameId, 3, 0);
+        // assert
+        assertEq(turn, eve);
+        assertEq(moves, 7);
+        assertEq(uint256(state), uint256(State.SUCCESS));
+        assertEq(uint256(strat), uint256(Strat.VERTICAL));
+        assertEq(connector.ownerOf(gameId), eve);
+        assertEq(connector.totalSupply(), 1);
+        connector.tokenURI(gameId);
+    }
+
+    function testAscending() public {
+        // setup
+        _challenge(bob, eve, fee);
+        _begin(eve, gameId, 0, 0, fee);
+        _move(bob, gameId, 0, 1);
+        _move(eve, gameId, 1, 1);
+        _move(bob, gameId, 0, 2);
+        _move(eve, gameId, 1, 0);
+        _move(bob, gameId, 1, 2);
+        _move(eve, gameId, 2, 2);
+        _move(bob, gameId, 0, 3);
+        _move(eve, gameId, 1, 3);
+        _move(bob, gameId, 2, 3);
+        _move(eve, gameId, 3, 3);
+        // assert
+        assertEq(turn, eve);
+        assertEq(moves, 11);
+        assertEq(uint256(state), uint256(State.SUCCESS));
+        assertEq(uint256(strat), uint256(Strat.ASCENDING));
+        assertEq(connector.ownerOf(gameId), eve);
+        assertEq(connector.totalSupply(), 1);
+        connector.tokenURI(gameId);
+    }
+
+    function testDescending() public {
+        // setup
+        _challenge(bob, eve, fee);
+        _begin(eve, gameId, 0, 0, fee);
+        _move(bob, gameId, 1, 0);
+        _move(eve, gameId, 2, 0);
+        _move(bob, gameId, 0, 1);
+        _move(eve, gameId, 3, 0);
+        _move(bob, gameId, 1, 1);
+        _move(eve, gameId, 2, 1);
+        _move(bob, gameId, 0, 2);
+        _move(eve, gameId, 1, 2);
+        _move(bob, gameId, 2, 2);
+        _move(eve, gameId, 0, 3);
+        // assert
+        assertEq(turn, eve);
+        assertEq(moves, 11);
+        assertEq(uint256(state), uint256(State.SUCCESS));
+        assertEq(uint256(strat), uint256(Strat.DESCENDING));
+        assertEq(connector.ownerOf(gameId), eve);
+        assertEq(connector.totalSupply(), 1);
+        connector.tokenURI(gameId);
+    }
+
+    /// ================
+    /// ===== DRAW =====
+    /// ================
+    function testDraw() public {
+        // setup
+        _challenge(bob, eve, fee);
+        _begin(eve, gameId, 0, 0, fee);
+        _move(bob, gameId, 1, 0);
+        _move(eve, gameId, 2, 0);
+        _move(bob, gameId, 3, 0);
+        _move(eve, gameId, 4, 0);
+        _move(bob, gameId, 5, 0);
+        _move(eve, gameId, 0, 1);
+        _move(bob, gameId, 1, 1);
+        _move(eve, gameId, 2, 1);
+        _move(bob, gameId, 3, 1);
+        _move(eve, gameId, 4, 1);
+        _move(bob, gameId, 5, 1);
+        _move(eve, gameId, 0, 2);
+        _move(bob, gameId, 1, 2);
+        _move(eve, gameId, 2, 2);
+        _move(bob, gameId, 3, 2);
+        _move(eve, gameId, 4, 2);
+        _move(bob, gameId, 5, 2);
+        _move(eve, gameId, 0, 4);
+        _move(bob, gameId, 0, 3);
+        _move(eve, gameId, 1, 3);
+        _move(bob, gameId, 2, 3);
+        _move(eve, gameId, 3, 3);
+        _move(bob, gameId, 4, 3);
+        _move(eve, gameId, 5, 3);
+        _move(bob, gameId, 1, 4);
+        _move(eve, gameId, 2, 4);
+        _move(bob, gameId, 3, 4);
+        _move(eve, gameId, 4, 4);
+        _move(bob, gameId, 5, 4);
+        _move(eve, gameId, 0, 5);
+        _move(bob, gameId, 1, 5);
+        _move(eve, gameId, 2, 5);
+        _move(bob, gameId, 3, 5);
+        _move(eve, gameId, 4, 5);
+        _move(bob, gameId, 5, 5);
+        _move(eve, gameId, 0, 6);
+        _move(bob, gameId, 1, 6);
+        _move(eve, gameId, 2, 6);
+        _move(bob, gameId, 3, 6);
+        _move(eve, gameId, 4, 6);
+        _move(bob, gameId, 5, 6);
+        // assert
+        assertEq(turn, address(0));
+        assertEq(moves, ROW * COL);
+        assertEq(uint256(state), uint256(State.DRAW));
+        assertEq(uint256(strat), uint256(Strat.NONE));
+        assertEq(connector.ownerOf(gameId), address(connector));
+        assertEq(connector.totalSupply(), 0);
+        connector.tokenURI(gameId);
+    }
+
+    /// ===================
     /// ===== HELPERS =====
     /// ===================
+
+    function printBoard() public view {
+        uint256 x = 1;
+        uint256 y = 1;
+        for (uint256 i; i < ROW; ++i) {
+            for (uint256 j; j < COL; ++j) {
+                console.log(x, y, board[i][j]);
+                ++y;
+            }
+            ++x;
+            y = 1;
+        }
+    }
 
     function _challenge(address _sender, address _opponent, uint256 _fee) internal prank(_sender) {
         connector.challenge{value: _fee}(_opponent);
@@ -303,8 +485,7 @@ contract ConnectorTest is Test {
     }
 
     function _setBoard(uint256 _gameId, uint256 _row) internal {
-        column = connector.getRow(_gameId, _row);
-        board[_row] = column;
+        board[_row] = connector.getRow(_gameId, _row);
     }
 
     function _boundCol(

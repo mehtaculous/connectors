@@ -113,9 +113,9 @@ contract Connector is IConnector, ERC721, ERC721Holder, Ownable {
         emit Move(_gameId, msg.sender, moves, _row, _col);
 
         // Checks if minimum number of moves for possible win has been made
-        if (moves >= 7) {
+        if (moves > 6) {
             // Checks horizontal placement of move
-            result = _checkHorizontal(msg.sender, _col, _row, board);
+            result = _checkHorizontal(msg.sender, _row, _col, board);
             // Checks vertical placement of move
             if (result == Strat.NONE) result = _checkVertical(msg.sender, _row, _col, board);
             // Checks diagonal placement of move ascending from left to right
@@ -134,10 +134,12 @@ contract Connector is IConnector, ERC721, ERC721Holder, Ownable {
 
             // Checks if number of winning games is less than maximum
             if (totalSupply < MAX_SUPPLY) {
+                // Burns current game board
+                _burn(_gameId);
                 // Increments total supply
                 ++totalSupply;
-                // Transfers winning board to caller
-                safeTransferFrom(address(this), msg.sender, _gameId);
+                // Mints winning board to caller
+                _safeMint(msg.sender, _gameId);
             }
         } else {
             // Updates player turn based on current caller
@@ -149,7 +151,7 @@ contract Connector is IConnector, ERC721, ERC721Holder, Ownable {
                 game.state = State.DRAW;
                 game.turn = address(0);
                 // Emits event for finishing game with a draw
-                emit Result(_gameId, address(0), game.state, game.strat, board);
+                emit Result(_gameId, game.turn, game.state, game.strat, board);
             }
         }
     }
@@ -245,11 +247,10 @@ contract Connector is IConnector, ERC721, ERC721Holder, Ownable {
     /// @param _game Game information
     /// return JSON data of game traits
     function generateGameTraits(Game memory _game) public view returns (string memory) {
-        address winner = (_game.state == State.SUCCESS) ? _game.turn : address(0);
         string memory moves = _game.moves.toString();
         string memory status = IMetadata(metadata).getStatus(_game.state);
         string memory turn = uint160(_game.turn).toHexString(20);
-        string memory label = (winner != address(0)) ? "Winner" : "Turn";
+        string memory label = (_game.turn != address(0)) ? "Winner" : "Turn";
 
         return
             string(
@@ -267,39 +268,6 @@ contract Connector is IConnector, ERC721, ERC721Holder, Ownable {
                     '"}'
                 )
             );
-    }
-
-    /// @dev Checks vertical placement of move on board
-    function _checkVertical(
-        address _player,
-        uint256 _row,
-        uint256 _col,
-        address[COL][ROW] storage _board
-    ) internal view returns (Strat result) {
-        uint256 i;
-        uint256 counter;
-        unchecked {
-            for (i = 1; i < 4; ++i) {
-                if (_row == 0) break;
-                if (_board[_row - i][_col] == _player) {
-                    ++counter;
-                } else {
-                    break;
-                }
-                if (_row - i == 0) break;
-            }
-
-            for (i = 1; i < 4; ++i) {
-                if (_row + i == ROW) break;
-                if (_board[_row + i][_col] == _player) {
-                    ++counter;
-                } else {
-                    break;
-                }
-            }
-        }
-
-        if (counter > 2) result = Strat.VERTICAL;
     }
 
     /// @dev Checks horizontal placement of move on board
@@ -333,6 +301,39 @@ contract Connector is IConnector, ERC721, ERC721Holder, Ownable {
         }
 
         if (counter > 2) result = Strat.HORIZONTAL;
+    }
+
+    /// @dev Checks vertical placement of move on board
+    function _checkVertical(
+        address _player,
+        uint256 _row,
+        uint256 _col,
+        address[COL][ROW] storage _board
+    ) internal view returns (Strat result) {
+        uint256 i;
+        uint256 counter;
+        unchecked {
+            for (i = 1; i < 4; ++i) {
+                if (_row == 0) break;
+                if (_board[_row - i][_col] == _player) {
+                    ++counter;
+                } else {
+                    break;
+                }
+                if (_row - i == 0) break;
+            }
+
+            for (i = 1; i < 4; ++i) {
+                if (_row + i == ROW) break;
+                if (_board[_row + i][_col] == _player) {
+                    ++counter;
+                } else {
+                    break;
+                }
+            }
+        }
+
+        if (counter > 2) result = Strat.VERTICAL;
     }
 
     /// @dev Checks diagonal placement of move ascending from left to right

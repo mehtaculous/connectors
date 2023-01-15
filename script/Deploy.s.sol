@@ -10,18 +10,42 @@ import "src/interfaces/IConnector.sol";
 import "src/interfaces/IMetadata.sol";
 
 contract DeployScript is Script {
+    // Contracts
     Connector connector;
+
+    // State
     address metadata;
     uint256 gameId;
+    uint256 col;
+    uint256 row;
+
+    // Constants
+    address constant OPPONENT = 0x16107A92e44E105b135d5F84D5730E9EAaa167B7;
 
     function setUp() public {
         vm.startBroadcast();
-        run();
+        deploy();
+        challenge();
+        begin();
+        move();
         vm.stopBroadcast();
     }
 
-    function run() public {
+    function deploy() public {
         connector = new Connector();
         metadata = connector.metadata();
+    }
+
+    function challenge() public {
+        connector.challenge(OPPONENT);
+        gameId = connector.currentId();
+    }
+
+    function begin() public {
+        connector.begin(gameId, row, col);
+    }
+
+    function move() public {
+        connector.begin(gameId, row, col+1);
     }
 }

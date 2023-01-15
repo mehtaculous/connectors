@@ -4,9 +4,7 @@ pragma solidity ^0.8.13;
 import "forge-std/Test.sol";
 
 import "src/Connectors.sol";
-import "src/Metadata.sol";
 import "src/interfaces/IConnectors.sol";
-import "src/interfaces/IMetadata.sol";
 
 contract ConnectorsTest is Test {
     // Contracts

@@ -17,7 +17,7 @@ contract Metadata is IMetadata, Ownable {
 
     function register(uint256 _gameId) external onlyOwner {
         Render storage render = renders[_gameId];
-        render.base = palette[_gameId - (1 % 3)];
+        render.base = palette[(_gameId - 1) % 3];
         render.player1 = palette[(_gameId) % 3];
         render.player2 = palette[(_gameId + 1) % 3];
     }

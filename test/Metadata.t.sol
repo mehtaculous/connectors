@@ -70,6 +70,24 @@ contract MetadataTest is Test {
         assertEq(base, yellow);
         assertEq(player1, blue);
         assertEq(player2, red);
+
+        // setup
+        gameId = 2;
+        // execute
+        _register(address(connectors), gameId);
+        // assert
+        assertEq(base, blue);
+        assertEq(player1, red);
+        assertEq(player2, yellow);
+
+        // setup
+        gameId = 3;
+        // execute
+        _register(address(connectors), gameId);
+        // assert
+        assertEq(base, red);
+        assertEq(player1, yellow);
+        assertEq(player2, blue);
     }
 
     function testRegisterRevertNotOwner() public {

@@ -88,8 +88,8 @@ contract Metadata is IMetadata, Ownable {
         uint256 _gameId
     ) external view returns (string memory player1, string memory player2) {
         Render memory render = renders[_gameId];
-        player1 = _checkColor(render.player1);
-        player2 = _checkColor(render.player2);
+        player1 = _getColor(render.player1);
+        player2 = _getColor(render.player2);
     }
 
     function getStatus(State _state) external pure returns (string memory status) {
@@ -99,7 +99,7 @@ contract Metadata is IMetadata, Ownable {
         else status = "Draw";
     }
 
-    function _checkColor(string memory _player) internal pure returns (string memory checker) {
+    function _getColor(string memory _player) internal pure returns (string memory checker) {
         if (_hash(_player) == _hash(BLUE)) checker = "Blue";
         else if (_hash(_player) == _hash(RED)) checker = "Red";
         else checker = "Yellow";

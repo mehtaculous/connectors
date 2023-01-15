@@ -4,14 +4,14 @@ pragma solidity ^0.8.13;
 import "forge-std/Script.sol";
 import "forge-std/Test.sol";
 
-import "src/Connector.sol";
+import "src/Connectors.sol";
 import "src/Metadata.sol";
-import "src/interfaces/IConnector.sol";
+import "src/interfaces/IConnectors.sol";
 import "src/interfaces/IMetadata.sol";
 
 contract DeployScript is Script {
     // Contracts
-    Connector connector;
+    Connectors connectors;
 
     // State
     address metadata;
@@ -30,12 +30,12 @@ contract DeployScript is Script {
     }
 
     function deploy() public {
-        connector = new Connector();
-        metadata = connector.metadata();
+        connectors = new Connectors();
+        metadata = connectors.metadata();
     }
 
     function challenge() public {
-        connector.challenge(OPPONENT);
-        gameId = connector.currentId();
+        connectors.challenge(OPPONENT);
+        gameId = connectors.currentId();
     }
 }

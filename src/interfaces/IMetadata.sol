@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.13;
 
-import {COL, ROW, State} from "src/interfaces/IConnector.sol";
+import {COL, ROW, State} from "src/interfaces/IConnectors.sol";
 
 struct Render {
     string base;

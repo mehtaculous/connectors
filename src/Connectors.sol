@@ -6,9 +6,9 @@ import "@openzeppelin/contracts/token/ERC721/utils/ERC721Holder.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 import "src/Metadata.sol";
-import "src/interfaces/IConnector.sol";
+import "src/interfaces/IConnectors.sol";
 
-contract Connector is IConnector, ERC721, ERC721Holder, Ownable {
+contract Connectors is IConnectors, ERC721, ERC721Holder, Ownable {
     using Strings for uint160;
     using Strings for uint256;
     /// @dev Maximum number of possible games won
@@ -25,7 +25,7 @@ contract Connector is IConnector, ERC721, ERC721Holder, Ownable {
     mapping(uint256 => Game) public games;
 
     /// @dev Deploys new Metadata contract
-    constructor() payable ERC721("Connector", "C4") {
+    constructor() payable ERC721("Connectors", "C4") {
         metadata = address(new Metadata());
     }
 

@@ -29,7 +29,7 @@ struct Game {
     address[COL][ROW] board;
 }
 
-interface IConnector {
+interface IConnectors {
     error InvalidGame();
     error InvalidMatchup();
     error InvalidMove();

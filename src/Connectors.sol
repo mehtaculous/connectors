@@ -2,7 +2,7 @@
 pragma solidity 0.8.13;
 
 /*********************************
- *       0   0   0   0   0       *
+ *           0       0           *
  * |░░░|░░░|░░░|░░░|░░░|░░░|░░░| *
  * |░░░|░░░|░░░|░░░|░░░|░░░|░░░| *
  * |░░░|░░░|░░░|░░░|░░░|░░░|░░░| *
@@ -48,10 +48,10 @@ contract Connectors is IConnectors, ERC721, ERC721Holder, Ownable {
     function challenge(address _opponent) external payable {
         // Reverts if caller or opponent is a smart contract
         if (msg.sender != tx.origin || _isContract(_opponent)) revert InvalidPlayer();
-        // Reverts if payment amount is incorrect
-        if (msg.value != fee) revert InvalidPayment();
         // Reverts if caller is also the opponent
         if (msg.sender == _opponent) revert InvalidMatchup();
+        // Reverts if payment amount is incorrect
+        if (msg.value != fee) revert InvalidPayment();
 
         // Initializes players and turn
         Game storage game = games[++currentId];
@@ -69,7 +69,7 @@ contract Connectors is IConnectors, ERC721, ERC721Holder, Ownable {
         emit Challenge(currentId, msg.sender, _opponent);
     }
 
-    /// @notice Begins inactive game and executes first move on board
+    /// @notice Activates new game and executes first move on board
     /// @dev Row and Column numbers are zero-indexed
     /// @param _gameId ID of the game
     /// @param _row Value of row number on board
@@ -95,7 +95,7 @@ contract Connectors is IConnectors, ERC721, ERC721Holder, Ownable {
         move(_gameId, _row, _col);
     }
 
-    /// @notice Executes new move on board
+    /// @notice Executes next placement on active board
     /// @dev Row and Column numbers are zero-indexed
     /// @param _gameId ID of the game
     /// @param _row Value of row number on board
@@ -127,7 +127,7 @@ contract Connectors is IConnectors, ERC721, ERC721Holder, Ownable {
         // Emits event for creating new move on board
         emit Move(_gameId, msg.sender, moves, _row, _col);
 
-        // Checks if minimum number of moves for possible win has been made
+        // Checks if minimum number of moves for possible win have been made
         if (moves > 6) {
             // Checks horizontal placement of move
             result = _checkHorizontal(msg.sender, _row, _col, board);

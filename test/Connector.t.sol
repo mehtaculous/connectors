@@ -105,6 +105,13 @@ contract ConnectorsTest is Test {
         _challenge(bob, address(this), fee);
     }
 
+    function testChallengeRevertInvalidMatchup() public {
+        // revert
+        vm.expectRevert(INVALID_MATCHUP_ERROR);
+        // execute
+        _challenge(bob, bob, fee);
+    }
+
     function testChallengeRevertInvalidPayment() public {
         // setup
         _setFee(address(this), 1 ether);
@@ -112,13 +119,6 @@ contract ConnectorsTest is Test {
         vm.expectRevert(INVALID_PAYMENT_ERROR);
         // execute
         _challenge(bob, eve, fee - 1);
-    }
-
-    function testChallengeRevertInvalidMatchup() public {
-        // revert
-        vm.expectRevert(INVALID_MATCHUP_ERROR);
-        // execute
-        _challenge(bob, bob, fee);
     }
 
     /// =================

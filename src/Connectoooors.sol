@@ -1,8 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.13;
 
-/// @title Connectoooors
-
 /*********************************
  *           0       0           *
  * |░░░|░░░|░░░|░░░|░░░|░░░|░░░| *
@@ -20,6 +18,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "src/Metadata.sol";
 import "src/interfaces/IConnectoooors.sol";
 
+/// @title Connectoooors
 /// @author swa.eth
 /// @notice Just a friendly on-chain game of Connect Four
 contract Connectoooors is IConnectoooors, ERC721, ERC721Holder, Ownable {
@@ -33,7 +32,7 @@ contract Connectoooors is IConnectoooors, ERC721, ERC721Holder, Ownable {
     uint256 public currentId;
     /// @notice Current number of games won
     uint256 public totalSupply;
-    /// @notice Ether amount required per player
+    /// @notice Ether amount required to play per player
     uint256 public fee = 0.042 ether;
     /// @notice Mapping of game ID to game info
     mapping(uint256 => Game) public games;

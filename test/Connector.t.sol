@@ -13,8 +13,8 @@ contract ConnectorsTest is Test {
     Connectors connectors;
 
     // Users
-    address bob = address(222);
-    address eve = address(333);
+    address bob = address(111);
+    address eve = address(222);
 
     // Game
     State state;

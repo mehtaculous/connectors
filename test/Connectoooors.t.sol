@@ -26,13 +26,14 @@ contract ConnectoooorsTest is Test {
     address metadata;
     uint256 row;
     uint256 col;
-    uint256 fee;
     uint256 gameId;
 
     // Constants
+    uint256 constant FEE = .042 ether;
     uint256 constant ETH_BALANCE = 100 ether;
 
     // Errors
+    bytes NOT_OWNER_ERROR = bytes("Ownable: caller is not the owner");
     bytes4 INVALID_GAME_ERROR = IConnectoooors.InvalidGame.selector;
     bytes4 INVALID_MATCHUP_ERROR = IConnectoooors.InvalidMatchup.selector;
     bytes4 INVALID_MOVE_ERROR = IConnectoooors.InvalidMove.selector;
@@ -81,13 +82,15 @@ contract ConnectoooorsTest is Test {
     /// =====================
     function testChallengeSuccess() public {
         // execute
-        _challenge(bob, eve, fee);
+        _challenge(bob, eve, FEE);
         // assert
         assertEq(gameId, 1);
         assertEq(player1, bob);
         assertEq(player2, eve);
         assertEq(turn, eve);
         assertEq(uint256(state), uint256(State.INACTIVE));
+        assertEq(bob.balance, ETH_BALANCE - FEE);
+        assertEq(address(connectors).balance, FEE);
         assertEq(connectors.ownerOf(gameId), address(connectors));
         connectors.tokenURI(gameId);
     }
@@ -103,23 +106,21 @@ contract ConnectoooorsTest is Test {
         // revert
         vm.expectRevert(INVALID_PLAYER_ERROR);
         // execute
-        _challenge(bob, address(this), fee);
+        _challenge(bob, address(this), FEE);
     }
 
     function testChallengeRevertInvalidMatchup() public {
         // revert
         vm.expectRevert(INVALID_MATCHUP_ERROR);
         // execute
-        _challenge(bob, bob, fee);
+        _challenge(bob, bob, FEE);
     }
 
     function testChallengeRevertInvalidPayment() public {
-        // setup
-        _setFee(address(this), 1 ether);
         // revert
         vm.expectRevert(INVALID_PAYMENT_ERROR);
         // execute
-        _challenge(bob, eve, fee - 1);
+        _challenge(bob, eve, FEE - 1);
     }
 
     /// =================
@@ -130,12 +131,14 @@ contract ConnectoooorsTest is Test {
         testChallengeSuccess();
         _col = _boundCol(_col, 0, COL);
         // execute
-        _begin(eve, gameId, row, _col, fee);
+        _begin(eve, gameId, row, _col, FEE);
         // assert
         assertEq(board[row][col], eve);
         assertEq(moves, 1);
         assertEq(turn, bob);
         assertEq(uint256(state), uint256(State.ACTIVE));
+        assertEq(eve.balance, ETH_BALANCE - FEE);
+        assertEq(address(connectors).balance, FEE * 2);
         connectors.tokenURI(gameId);
     }
 
@@ -146,7 +149,7 @@ contract ConnectoooorsTest is Test {
         // revert
         vm.expectRevert(INVALID_GAME_ERROR);
         // execute
-        _begin(eve, ++gameId, row, _col, fee);
+        _begin(eve, ++gameId, row, _col, FEE);
     }
 
     function testBeginRevertInvalidPayment(uint256 _col) public {
@@ -157,7 +160,7 @@ contract ConnectoooorsTest is Test {
         // revert
         vm.expectRevert(INVALID_PAYMENT_ERROR);
         // execute
-        _begin(eve, gameId, row, _col, fee - 1);
+        _begin(eve, gameId, row, _col, FEE - 1);
     }
 
     function testBeginRevertInvalidState(uint256 _col) public {
@@ -167,7 +170,7 @@ contract ConnectoooorsTest is Test {
         // revert
         vm.expectRevert(INVALID_STATE_ERROR);
         // execute
-        _begin(eve, gameId, row, _col, fee);
+        _begin(eve, gameId, row, _col, FEE);
     }
 
     function testBeginRevertNotAuthorized(uint256 _col) public {
@@ -177,7 +180,7 @@ contract ConnectoooorsTest is Test {
         // revert
         vm.expectRevert(NOT_AUTHORIZED_ERROR);
         // execute
-        _begin(bob, gameId, row, _col, fee);
+        _begin(bob, gameId, row, _col, FEE);
     }
 
     /// ================
@@ -185,8 +188,8 @@ contract ConnectoooorsTest is Test {
     /// ================
     function testMoveSuccess() public {
         // setup
-        _challenge(bob, eve, fee);
-        _begin(eve, gameId, row, col, fee);
+        _challenge(bob, eve, FEE);
+        _begin(eve, gameId, row, col, FEE);
         // execute
         _move(bob, gameId, row, col + 1);
         // assert
@@ -260,12 +263,12 @@ contract ConnectoooorsTest is Test {
         // execute
         _setFee(address(this), _fee);
         // assert
-        assertEq(fee, connectors.fee());
+        assertEq(_fee, connectors.fee());
     }
 
     function testSetFeeRevertNotOwner(uint256 _fee) public {
         // revert
-        vm.expectRevert();
+        vm.expectRevert(NOT_OWNER_ERROR);
         // execute
         _setFee(bob, _fee);
     }
@@ -282,7 +285,7 @@ contract ConnectoooorsTest is Test {
 
     function testToggleAnimateRevertNotOwner() public {
         // revert
-        vm.expectRevert();
+        vm.expectRevert(NOT_OWNER_ERROR);
         // execute
         _toggleAnimate(bob);
     }
@@ -292,12 +295,11 @@ contract ConnectoooorsTest is Test {
     /// ====================
     function testWithdraw(uint256 _col) public {
         // setup
-        _setFee(address(this), 1 ether);
         testBeginSuccess(_col);
         // execute
         _withdraw(address(this), payable(address(this)));
         // assert
-        assertEq(address(this).balance, ETH_BALANCE + (fee * 2));
+        assertEq(address(this).balance, ETH_BALANCE + (FEE * 2));
     }
 
     /// =====================
@@ -315,8 +317,8 @@ contract ConnectoooorsTest is Test {
     /// ===================
     function testHorizontal() public {
         // setup
-        _challenge(bob, eve, fee);
-        _begin(eve, gameId, 0, 0, fee);
+        _challenge(bob, eve, FEE);
+        _begin(eve, gameId, 0, 0, FEE);
         _move(bob, gameId, 1, 0);
         _move(eve, gameId, 0, 1);
         _move(bob, gameId, 2, 0);
@@ -335,8 +337,8 @@ contract ConnectoooorsTest is Test {
 
     function testVertical() public {
         // setup
-        _challenge(bob, eve, fee);
-        _begin(eve, gameId, 0, 0, fee);
+        _challenge(bob, eve, FEE);
+        _begin(eve, gameId, 0, 0, FEE);
         _move(bob, gameId, 0, 1);
         _move(eve, gameId, 1, 0);
         _move(bob, gameId, 0, 2);
@@ -355,8 +357,8 @@ contract ConnectoooorsTest is Test {
 
     function testAscending() public {
         // setup
-        _challenge(bob, eve, fee);
-        _begin(eve, gameId, 0, 0, fee);
+        _challenge(bob, eve, FEE);
+        _begin(eve, gameId, 0, 0, FEE);
         _move(bob, gameId, 0, 1);
         _move(eve, gameId, 1, 1);
         _move(bob, gameId, 0, 2);
@@ -379,8 +381,8 @@ contract ConnectoooorsTest is Test {
 
     function testDescending() public {
         // setup
-        _challenge(bob, eve, fee);
-        _begin(eve, gameId, 0, 0, fee);
+        _challenge(bob, eve, FEE);
+        _begin(eve, gameId, 0, 0, FEE);
         _move(bob, gameId, 1, 0);
         _move(eve, gameId, 2, 0);
         _move(bob, gameId, 0, 1);
@@ -406,8 +408,8 @@ contract ConnectoooorsTest is Test {
     /// ================
     function testDraw() public {
         // setup
-        _challenge(bob, eve, fee);
-        _begin(eve, gameId, 0, 0, fee);
+        _challenge(bob, eve, FEE);
+        _begin(eve, gameId, 0, 0, FEE);
         _move(bob, gameId, 1, 0);
         _move(eve, gameId, 2, 0);
         _move(bob, gameId, 3, 0);
@@ -513,7 +515,6 @@ contract ConnectoooorsTest is Test {
 
     function _setFee(address _sender, uint256 _fee) internal prank(_sender) {
         connectors.setFee(_fee);
-        fee = _fee;
     }
 
     function _toggleAnimate(address _sender) internal prank(_sender) {

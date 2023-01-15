@@ -31,10 +31,10 @@ contract Connectoooors is IConnectoooors, ERC721, ERC721Holder, Ownable {
     address public immutable metadata;
     /// @notice Current game ID
     uint256 public currentId;
-    /// @notice Ether amount required to challenge or begin game
-    uint256 public fee;
     /// @notice Current number of games won
     uint256 public totalSupply;
+    /// @notice Ether amount required per player
+    uint256 public fee = 0.042 ether;
     /// @notice Mapping of game ID to game info
     mapping(uint256 => Game) public games;
 
@@ -209,7 +209,7 @@ contract Connectoooors is IConnectoooors, ERC721, ERC721Holder, Ownable {
         address player1 = game.player1;
         address player2 = game.player2;
         string memory name = string.concat("Connectoooor #", _tokenId.toString());
-        string memory description = "Just a friendly on-chain game of Connect Four.";
+        string memory description = "Just a friendly on-chain game of Connect Four. Your move anon.";
         string memory playerTraits = generatePlayerTraits(_tokenId, player1, player2);
         string memory gameTraits = generateGameTraits(game);
         string memory image = IMetadata(metadata).generateSVG(

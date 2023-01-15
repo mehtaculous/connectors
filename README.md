@@ -1,6 +1,6 @@
 # Connectoooors
 
-Just a friendly on-chain game of Connect Four.
+Just a friendly on-chain game of Connect Four. Your move anon.
 
 <img src="images/board.svg">
 

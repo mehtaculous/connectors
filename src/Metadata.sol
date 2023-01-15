@@ -36,11 +36,13 @@ contract Metadata is IMetadata, Ownable {
         for (uint256 y; y < COL; ++y) {
             board = string.concat(board, _generateGrid(y));
             for (uint256 x; x < ROW; ++x) {
+                string memory cell;
                 if (_board[x][y] == _player1) {
-                    board = string.concat(board, _generateCell(x, y, _row, _col, render.player1));
+                    cell = _generateCell(x, y, _row, _col, render.player1);
                 } else if (_board[x][y] == _player2) {
-                    board = string.concat(board, _generateCell(x, y, _row, _col, render.player2));
+                    cell = _generateCell(x, y, _row, _col, render.player2);
                 }
+                board = string.concat(board, cell);
             }
             board = string.concat(board, _generateBase(render.base));
         }
@@ -72,33 +74,12 @@ contract Metadata is IMetadata, Ownable {
         uint256 _row,
         uint256 _col,
         string memory _checker
-    ) internal view returns (string memory) {
+    ) internal view returns (string memory cell) {
         uint256 cy = 550 - (_x * 100);
         if (_x == _row && _y == _col && animate) {
-            string[7] memory cell;
-            uint256 duration = (cy / 100 == 0) ? 1 : cy / 100;
-            string memory secs = string.concat(duration.toString(), "s");
-            cell[0] = "<circle id='current-move' cx='50' cy='0' r='45' fill='";
-            cell[1] = _checker;
-            cell[2] = "'><animate xlink:href='#current-move' attributename='cy' from='0' to='";
-            cell[3] = cy.toString();
-            cell[4] = " 'dur='";
-            cell[5] = secs;
-            cell[6] = "' begin='2s' fill='freeze'></animate></circle>";
-
-            return
-                string(
-                    abi.encodePacked(cell[0], cell[1], cell[2], cell[3], cell[4], cell[5], cell[6])
-                );
+            cell = _animateCell(cy, _checker);
         } else {
-            string[5] memory cell;
-            cell[0] = "<circle cx='50' cy='";
-            cell[1] = cy.toString();
-            cell[2] = "' r='45' fill='";
-            cell[3] = _checker;
-            cell[4] = "'></circle>";
-
-            return string(abi.encodePacked(cell[0], cell[1], cell[2], cell[3], cell[4]));
+            cell = _staticCell(cy, _checker);
         }
     }
 
@@ -124,6 +105,40 @@ contract Metadata is IMetadata, Ownable {
         base[2] = "' mask='url(#cell-mask)'></rect></svg>";
 
         return string(abi.encodePacked(base[0], base[1], base[2]));
+    }
+
+    function _animateCell(
+        uint256 _cy,
+        string memory _checker
+    ) internal pure returns (string memory) {
+        uint256 duration = (_cy / 100 == 0) ? 1 : _cy / 100;
+        string memory secs = string.concat(duration.toString(), "s");
+
+        string[7] memory cell;
+        cell[0] = "<circle id='latest' cx='50' cy='0' r='45' fill='";
+        cell[1] = _checker;
+        cell[2] = "'><animate xlink:href='#latest' attributename='cy' from='0' to='";
+        cell[3] = _cy.toString();
+        cell[4] = " 'dur='";
+        cell[5] = secs;
+        cell[6] = "' begin='2s' fill='freeze'></animate></circle>";
+
+        return
+            string(abi.encodePacked(cell[0], cell[1], cell[2], cell[3], cell[4], cell[5], cell[6]));
+    }
+
+    function _staticCell(
+        uint256 _cy,
+        string memory _checker
+    ) internal pure returns (string memory) {
+        string[5] memory cell;
+        cell[0] = "<circle cx='50' cy='";
+        cell[1] = _cy.toString();
+        cell[2] = "' r='45' fill='";
+        cell[3] = _checker;
+        cell[4] = "'></circle>";
+
+        return string(abi.encodePacked(cell[0], cell[1], cell[2], cell[3], cell[4]));
     }
 
     function _getColor(string memory _player) internal pure returns (string memory checker) {

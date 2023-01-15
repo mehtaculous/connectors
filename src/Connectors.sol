@@ -53,7 +53,7 @@ contract Connectors is IConnectors, ERC721, ERC721Holder, Ownable {
         // Reverts if payment amount is incorrect
         if (msg.value != fee) revert InvalidPayment();
 
-        // Initializes players and turn
+        // Initializes game info
         Game storage game = games[++currentId];
         game.player1 = msg.sender;
         game.player2 = _opponent;
@@ -72,8 +72,8 @@ contract Connectors is IConnectors, ERC721, ERC721Holder, Ownable {
     /// @notice Activates new game and executes first move on board
     /// @dev Row and Column numbers are zero-indexed
     /// @param _gameId ID of the game
-    /// @param _row Value of row number on board
-    /// @param _col Value of column number on board
+    /// @param _row Placement of row number on board (0-5)
+    /// @param _col Placement of column number on board (0-6)
     function begin(uint256 _gameId, uint256 _row, uint256 _col) external payable {
         // Reverts if game does not exist
         if (_gameId == 0 || _gameId > currentId) revert InvalidGame();
@@ -98,8 +98,8 @@ contract Connectors is IConnectors, ERC721, ERC721Holder, Ownable {
     /// @notice Executes next placement on active board
     /// @dev Row and Column numbers are zero-indexed
     /// @param _gameId ID of the game
-    /// @param _row Value of row number on board
-    /// @param _col Value of column number on board
+    /// @param _row Placement of row number on board (0-5)
+    /// @param _col Placement of column number on board (0-6)
     function move(
         uint256 _gameId,
         uint256 _row,
@@ -117,15 +117,13 @@ contract Connectors is IConnectors, ERC721, ERC721Holder, Ownable {
         if (board[_row][_col] != address(0) || (_row > 0 && board[_row - 1][_col] == address(0)))
             revert InvalidMove();
 
-        // Records move
-        game.row = _row;
-        game.col = _col;
-
         // Increments total number of moves made
         ++game.moves;
         uint256 moves = game.moves;
 
-        // Sets cell to address of caller
+        // Records move for caller
+        game.row = _row;
+        game.col = _col;
         board[_row][_col] = msg.sender;
 
         // Emits event for creating new move on board
@@ -143,7 +141,7 @@ contract Connectors is IConnectors, ERC721, ERC721Holder, Ownable {
             if (result == Strat.NONE) result = _checkDescending(msg.sender, _row, _col, board);
         }
 
-        // Checks if result if any of winning strategies
+        // Checks if result is any of the winning strategies
         if (result != Strat.NONE) {
             // Updates state of game to successful
             game.strat = result;
@@ -153,7 +151,7 @@ contract Connectors is IConnectors, ERC721, ERC721Holder, Ownable {
 
             // Checks if number of winning games is less than maximum
             if (totalSupply < MAX_SUPPLY) {
-                // Burns current game board
+                // Burns current token
                 _burn(_gameId);
                 // Increments total supply
                 ++totalSupply;
@@ -161,10 +159,10 @@ contract Connectors is IConnectors, ERC721, ERC721Holder, Ownable {
                 _safeMint(msg.sender, _gameId);
             }
         } else {
-            // Updates player turn based on current caller
+            // Updates player turn based on current player
             game.turn = (msg.sender == game.player1) ? game.player2 : game.player1;
 
-            // Check is number of moves has reached total possible moves
+            // Checks if number of moves has reached maximum possible moves
             if (moves == ROW * COL) {
                 // Updates state of game to draw
                 game.state = State.DRAW;

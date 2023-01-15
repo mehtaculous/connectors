@@ -22,12 +22,10 @@ contract DeployScript is Script {
     // Constants
     address constant OPPONENT = 0x16107A92e44E105b135d5F84D5730E9EAaa167B7;
 
-    function setUp() public {
+    function run() public {
         vm.startBroadcast();
         deploy();
         challenge();
-        begin();
-        move();
         vm.stopBroadcast();
     }
 
@@ -39,13 +37,5 @@ contract DeployScript is Script {
     function challenge() public {
         connector.challenge(OPPONENT);
         gameId = connector.currentId();
-    }
-
-    function begin() public {
-        connector.begin(gameId, row, col);
-    }
-
-    function move() public {
-        connector.begin(gameId, row, col+1);
     }
 }

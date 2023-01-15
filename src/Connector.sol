@@ -166,7 +166,7 @@ contract Connector is IConnector, ERC721, ERC721Holder, Ownable {
     /// @param _to Target address transferring balance to
     function withdraw(address payable _to) external payable onlyOwner {
         (bool success, ) = _to.call{value: address(this).balance}("");
-        if (!success) revert UnsuccessfulTransfer();
+        if (!success) revert();
     }
 
     /// @notice Gets the entire column for a given row
@@ -185,7 +185,7 @@ contract Connector is IConnector, ERC721, ERC721Holder, Ownable {
         address[COL][ROW] memory board = game.board;
         address player1 = game.player1;
         address player2 = game.player2;
-        string memory name = string.concat("Connector #", _tokenId.toString());
+        string memory name = string.concat("Board #", _tokenId.toString());
         string memory description = "Just a friendly on-chain game of Connect Four.";
         string memory image = IMetadata(metadata).generateSVG(_tokenId, player1, player2, board);
         string memory playerTraits = generatePlayerTraits(_tokenId, player1, player2);
@@ -250,7 +250,7 @@ contract Connector is IConnector, ERC721, ERC721Holder, Ownable {
         string memory moves = _game.moves.toString();
         string memory status = IMetadata(metadata).getStatus(_game.state);
         string memory turn = uint160(_game.turn).toHexString(20);
-        string memory label = (_game.turn != address(0)) ? "Winner" : "Turn";
+        string memory label = (_game.state == State.SUCCESS) ? "Winner" : "Turn";
 
         return
             string(

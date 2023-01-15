@@ -36,7 +36,6 @@ interface IConnector {
     error InvalidPayment();
     error InvalidState();
     error NotAuthorized();
-    error UnsuccessfulTransfer();
 
     event Challenge(uint256 indexed _gameId, address indexed _player1, address indexed _player2);
 

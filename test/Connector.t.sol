@@ -17,7 +17,6 @@ contract ConnectorTest is Test {
     address eve = address(333);
 
     // Game
-    Game game;
     State state;
     Strat strat;
     address player1;

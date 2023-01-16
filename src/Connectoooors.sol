@@ -82,11 +82,11 @@ contract Connectoooors is IConnectoooors, ERC721, ERC721Holder, Ownable {
         // Reverts if game does not exist
         if (_gameId == 0 || _gameId > currentId) revert InvalidGame();
         Game storage game = games[_gameId];
-        uint8 player = _getPlayer(game, msg.sender);
+        uint8 playerId = _getPlayerId(game, msg.sender);
         // Reverts if game state is not Inactive
         if (State.INACTIVE != game.state) revert InvalidState();
         // Reverts if caller is not authorized to execute move
-        if (player != game.turn) revert NotAuthorized();
+        if (playerId != game.turn) revert NotAuthorized();
         // Reverts if payment amount is incorrect
         if (msg.value != fee) revert InvalidPayment();
 
@@ -110,11 +110,11 @@ contract Connectoooors is IConnectoooors, ERC721, ERC721Holder, Ownable {
         if (_gameId == 0 || _gameId > currentId) revert InvalidGame();
         Game storage game = games[_gameId];
         uint8[COL][ROW] storage board = game.board;
-        uint8 player = _getPlayer(game, msg.sender);
+        uint8 playerId = _getPlayerId(game, msg.sender);
         // Reverts if game state is not Active
         if (game.state != State.ACTIVE) revert InvalidState();
         // Reverts if caller is not authorized to execute move
-        if (player != game.turn) revert NotAuthorized();
+        if (playerId != game.turn) revert NotAuthorized();
         // Reverts if cell is occupied or placement is not valid
         if (board[_row][_col] != 0 || (_row > 0 && board[_row - 1][_col] == 0))
             revert InvalidMove();
@@ -126,7 +126,7 @@ contract Connectoooors is IConnectoooors, ERC721, ERC721Holder, Ownable {
         // Records move for caller
         game.row = _row;
         game.col = _col;
-        board[_row][_col] = player;
+        board[_row][_col] = playerId;
 
         // Emits event for creating new move on board
         emit Move(_gameId, msg.sender, moves, _row, _col);
@@ -134,13 +134,13 @@ contract Connectoooors is IConnectoooors, ERC721, ERC721Holder, Ownable {
         // Checks if minimum number of moves for possible win have been made
         if (moves > 6) {
             // Checks horizontal placement of move
-            result = _checkHorizontal(player, _row, _col, board);
+            result = _checkHorizontal(playerId, _row, _col, board);
             // Checks vertical placement of move
-            if (result == Strat.NONE) result = _checkVertical(player, _row, _col, board);
+            if (result == Strat.NONE) result = _checkVertical(playerId, _row, _col, board);
             // Checks diagonal placement of move ascending from left to right
-            if (result == Strat.NONE) result = _checkAscending(player, _row, _col, board);
+            if (result == Strat.NONE) result = _checkAscending(playerId, _row, _col, board);
             // Checks diagonal placement of move descending from left to right
-            if (result == Strat.NONE) result = _checkDescending(player, _row, _col, board);
+            if (result == Strat.NONE) result = _checkDescending(playerId, _row, _col, board);
         }
 
         // Checks if result is any of the winning strategies
@@ -325,7 +325,7 @@ contract Connectoooors is IConnectoooors, ERC721, ERC721Holder, Ownable {
 
     /// @dev Checks horizontal placement of move on board
     function _checkHorizontal(
-        uint8 _player,
+        uint8 _playerId,
         uint8 _row,
         uint8 _col,
         uint8[COL][ROW] storage _board
@@ -335,7 +335,7 @@ contract Connectoooors is IConnectoooors, ERC721, ERC721Holder, Ownable {
         unchecked {
             for (i = 1; i < 4; ++i) {
                 if (_col == 0) break;
-                if (_board[_row][_col - i] == _player) {
+                if (_board[_row][_col - i] == _playerId) {
                     ++counter;
                 } else {
                     break;
@@ -345,7 +345,7 @@ contract Connectoooors is IConnectoooors, ERC721, ERC721Holder, Ownable {
 
             for (i = 1; i < 4; ++i) {
                 if (_col + i == COL) break;
-                if (_board[_row][_col + i] == _player) {
+                if (_board[_row][_col + i] == _playerId) {
                     ++counter;
                 } else {
                     break;
@@ -358,7 +358,7 @@ contract Connectoooors is IConnectoooors, ERC721, ERC721Holder, Ownable {
 
     /// @dev Checks vertical placement of move on board
     function _checkVertical(
-        uint8 _player,
+        uint8 _playerId,
         uint8 _row,
         uint8 _col,
         uint8[COL][ROW] storage _board
@@ -368,7 +368,7 @@ contract Connectoooors is IConnectoooors, ERC721, ERC721Holder, Ownable {
         unchecked {
             for (i = 1; i < 4; ++i) {
                 if (_row == 0) break;
-                if (_board[_row - i][_col] == _player) {
+                if (_board[_row - i][_col] == _playerId) {
                     ++counter;
                 } else {
                     break;
@@ -378,7 +378,7 @@ contract Connectoooors is IConnectoooors, ERC721, ERC721Holder, Ownable {
 
             for (i = 1; i < 4; ++i) {
                 if (_row + i == ROW) break;
-                if (_board[_row + i][_col] == _player) {
+                if (_board[_row + i][_col] == _playerId) {
                     ++counter;
                 } else {
                     break;
@@ -391,7 +391,7 @@ contract Connectoooors is IConnectoooors, ERC721, ERC721Holder, Ownable {
 
     /// @dev Checks diagonal placement of move ascending from left to right
     function _checkAscending(
-        uint8 _player,
+        uint8 _playerId,
         uint8 _row,
         uint8 _col,
         uint8[COL][ROW] storage _board
@@ -401,7 +401,7 @@ contract Connectoooors is IConnectoooors, ERC721, ERC721Holder, Ownable {
         unchecked {
             for (i = 1; i < 4; ++i) {
                 if (_row == 0 || _col == 0) break;
-                if (_board[_row - i][_col - i] == _player) {
+                if (_board[_row - i][_col - i] == _playerId) {
                     ++counter;
                 } else {
                     break;
@@ -411,7 +411,7 @@ contract Connectoooors is IConnectoooors, ERC721, ERC721Holder, Ownable {
 
             for (i = 1; i < 4; ++i) {
                 if (_row + i == ROW || _col + i == COL) break;
-                if (_board[_row + i][_col + i] == _player) {
+                if (_board[_row + i][_col + i] == _playerId) {
                     ++counter;
                 } else {
                     break;
@@ -424,7 +424,7 @@ contract Connectoooors is IConnectoooors, ERC721, ERC721Holder, Ownable {
 
     /// @dev Checks diagonal placement of move descending from left to right
     function _checkDescending(
-        uint8 _player,
+        uint8 _playerId,
         uint8 _row,
         uint8 _col,
         uint8[COL][ROW] storage _board
@@ -434,7 +434,7 @@ contract Connectoooors is IConnectoooors, ERC721, ERC721Holder, Ownable {
         unchecked {
             for (i = 1; i < 4; ++i) {
                 if (_row + i == ROW || _col == 0) break;
-                if (_board[_row + i][_col - i] == _player) {
+                if (_board[_row + i][_col - i] == _playerId) {
                     ++counter;
                 } else {
                     break;
@@ -444,7 +444,7 @@ contract Connectoooors is IConnectoooors, ERC721, ERC721Holder, Ownable {
 
             for (i = 1; i < 4; ++i) {
                 if (_row == 0 || _col + i == COL) break;
-                if (_board[_row - i][_col + i] == _player) {
+                if (_board[_row - i][_col + i] == _playerId) {
                     ++counter;
                 } else {
                     break;
@@ -465,12 +465,15 @@ contract Connectoooors is IConnectoooors, ERC721, ERC721Holder, Ownable {
         return size > 0;
     }
 
-    /// @dev Gets player value based on caller
-    function _getPlayer(Game storage _game, address _player) internal view returns (uint8 player) {
+    /// @dev Gets player ID of caller
+    function _getPlayerId(
+        Game storage _game,
+        address _player
+    ) internal view returns (uint8 playerId) {
         if (_player == _game.player1) {
-            player = PLAYER_1;
+            playerId = PLAYER_1;
         } else if (_player == _game.player2) {
-            player = PLAYER_2;
+            playerId = PLAYER_2;
         }
     }
 }

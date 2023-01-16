@@ -23,6 +23,8 @@ import "src/interfaces/IConnectoooors.sol";
 /// @author swa.eth
 /// @notice Just a friendly on-chain game of Connect Four
 contract Connectoooors is IConnectoooors, ERC721, ERC721Holder, Ownable {
+    using Strings for uint48;
+    using Strings for uint96;
     using Strings for uint160;
     using Strings for uint256;
     /// @dev Interface identifier for royalty standard
@@ -125,8 +127,8 @@ contract Connectoooors is IConnectoooors, ERC721, ERC721Holder, Ownable {
         uint256 moves = game.moves;
 
         // Records move for caller
-        game.row = _row;
-        game.col = _col;
+        game.row = uint48(_row);
+        game.col = uint48(_col);
         board[_row][_col] = msg.sender;
 
         // Emits event for creating new move on board

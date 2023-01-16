@@ -24,10 +24,10 @@ struct Game {
     Strat strat;
     address player1;
     address player2;
+    uint96 moves;
     address turn;
-    uint256 moves;
-    uint256 row;
-    uint256 col;
+    uint48 row;
+    uint48 col;
     address[COL][ROW] board;
 }
 

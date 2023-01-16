@@ -19,7 +19,7 @@ contract ConnectoooorsTest is Test {
     address player1;
     address player2;
     address turn;
-    uint256 moves;
+    uint96 moves;
     address[COL][ROW] board;
 
     // State
@@ -530,7 +530,7 @@ contract ConnectoooorsTest is Test {
     }
 
     function _setState(uint256 _gameId) internal {
-        (state, strat, player1, player2, turn, moves, , ) = connectors.games(_gameId);
+        (state, strat, player1, player2, moves, turn, , ) = connectors.games(_gameId);
     }
 
     function _setMove(uint256 _row, uint256 _col) internal {

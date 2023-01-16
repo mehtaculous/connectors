@@ -25,7 +25,6 @@ contract Connectoooors is IConnectoooors, ERC721, ERC721Holder, Ownable {
     using Strings for uint8;
     using Strings for uint160;
     using Strings for uint256;
-
     /// @dev Interface identifier for royalty standard
     bytes4 constant _INTERFACE_ID_ERC2981 = 0x2a55205a;
     /// @dev Maximum supply of winning game boards
@@ -105,7 +104,7 @@ contract Connectoooors is IConnectoooors, ERC721, ERC721Holder, Ownable {
     /// @param _gameId ID of the game
     /// @param _row Value of row placement on board (0-5)
     /// @param _col Value of column placement on board (0-6)
-    function move(uint256 _gameId, uint8 _row, uint8 _col) public payable returns (Strat result) {
+    function move(uint256 _gameId, uint8 _row, uint8 _col) public returns (Strat result) {
         // Reverts if game does not exist
         if (_gameId == 0 || _gameId > currentId) revert InvalidGame();
         Game storage game = games[_gameId];
@@ -179,11 +178,6 @@ contract Connectoooors is IConnectoooors, ERC721, ERC721Holder, Ownable {
     /// @param _fee Amount in ether
     function setFee(uint256 _fee) external payable onlyOwner {
         fee = _fee;
-    }
-
-    /// @notice Toggles animation of SVG image art
-    function toggleAnimate() external payable onlyOwner {
-        IMetadata(metadata).toggleAnimate();
     }
 
     /// @notice Withdraws balance from contract
@@ -306,18 +300,18 @@ contract Connectoooors is IConnectoooors, ERC721, ERC721Holder, Ownable {
             string(
                 abi.encodePacked(
                     '{"trait_type":"Latest", "value":"',
-                    latest,
+                        latest,
                     '"},',
                     '{"trait_type":"Moves", "value":"',
-                    moves,
+                        moves,
                     '"},',
                     '{"trait_type":"Status", "value":"',
-                    status,
+                        status,
                     '"},',
                     '{"trait_type":"',
-                    label,
+                        label,
                     '", "value":"',
-                    turn,
+                        turn,
                     '"}'
                 )
             );
@@ -456,15 +450,6 @@ contract Connectoooors is IConnectoooors, ERC721, ERC721Holder, Ownable {
         if (counter > 2) result = Strat.DESCENDING;
     }
 
-    /// @dev Checks if given address is a smart contract
-    function _isContract(address _addr) internal view returns (bool) {
-        uint256 size;
-        assembly {
-            size := extcodesize(_addr)
-        }
-        return size > 0;
-    }
-
     /// @dev Gets player ID of caller
     function _getPlayerId(
         Game storage _game,
@@ -475,5 +460,14 @@ contract Connectoooors is IConnectoooors, ERC721, ERC721Holder, Ownable {
         } else if (_player == _game.player2) {
             playerId = PLAYER_2;
         }
+    }
+
+    /// @dev Checks if given address is a smart contract
+    function _isContract(address _addr) internal view returns (bool) {
+        uint256 size;
+        assembly {
+            size := extcodesize(_addr)
+        }
+        return size > 0;
     }
 }

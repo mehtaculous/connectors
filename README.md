@@ -9,8 +9,9 @@ Just a friendly on-chain game of Connect Four. Your move anon.
 
 > Creates a new game and mints a new token
 
-- Challenging an opponent mints a new ERC-721 token of a fresh game board.
-- Follow along for a visual status of the game by visiting any [marketplace](https://testnets.opensea.io/collection/connectors-v2) that supports on-chain art.
+- Challenge an opponent to game of Connect Four.
+- Each new game mints an ERC-721 token of an empty game board.
+- Follow along with the game on any [marketplace](https://testnets.opensea.io/collection/connectoooors-v4) that supports on-chain art.
 
 ### `Begin`
 
@@ -30,7 +31,7 @@ Just a friendly on-chain game of Connect Four. Your move anon.
 - Every move dynamically updates the metadata and SVG image of the NFT on-chain and in real time.
 - Players can win by getting **4** in a row *horizontally*, *vertically* or *diagonally*.
 - When a player wins, they are transferred the winning game board (total supply is capped at **100**).
-- If the game ends in a draw (or if maximum supply has been reached), no player will receive the NFT.
+- If the game ends in a draw (or if max supply has been reached), the NFT will remain with the smart contract.
 
 
 ### Mainnet
@@ -45,8 +46,8 @@ Just a friendly on-chain game of Connect Four. Your move anon.
 
 | Name                | Address                                                                                                                      |
 | ---------------     | ---------------------------------------------------------------------------------------------------------------------------- |
-| `Connectoooors.sol` | [0x8797681E553197442accabBC85Dc30A2eE4b6f87](https://goerli.etherscan.io/address/0x8797681E553197442accabBC85Dc30A2eE4b6f87) |
-| `Metadata.sol`      | [0xD6237A39Dd8D3c68fC9178F445a2Ee84936356bb](https://goerli.etherscan.io/address/0xD6237A39Dd8D3c68fC9178F445a2Ee84936356bb) |
+| `Connectoooors.sol` | [0x571bbd7da16f6b428a891fa5944586cc2e47ac83](https://goerli.etherscan.io/address/0x571bbd7da16f6b428a891fa5944586cc2e47ac83) |
+| `Metadata.sol`      | [0x10c6Ddc93a58161050eaddB184D7A9d28881C285](https://goerli.etherscan.io/address/0x10c6Ddc93a58161050eaddB184D7A9d28881C285) |
 
 
 ### Gas Report
@@ -54,14 +55,12 @@ Just a friendly on-chain game of Connect Four. Your move anon.
 | Connectoooors.sol                            |                 |        |        |        |         |
 |----------------------------------------------|-----------------|--------|--------|--------|---------|
 | Deployment Cost                              | Deployment Size |        |        |        |         |
-| 4772329                                      | 23862           |        |        |        |         |
+| 4707222                                      | 23530           |        |        |        |         |
 | Function Name                                | min             | avg    | median | max    | # calls |
-| begin                                        | 679             | 24023  | 29241  | 31141  | 19      |
-| challenge                                    | 469             | 171722 | 205722 | 205722 | 24      |
-| games                                        | 1117            | 1279   | 1117   | 5117   | 123     |
-| getRow                                       | 14793           | 15742  | 14793  | 26793  | 99      |
-| move                                         | 638             | 15995  | 10347  | 95466  | 81      |
-| setFee                                       | 2508            | 4959   | 4959   | 7410   | 2       |
-| toggleAnimate                                | 2474            | 6573   | 6573   | 10673  | 2       |
-| tokenURI                                     | 264366          | 290814 | 270152 | 568648 | 29      |
+| begin                                        | 657             | 24017  | 29219  | 31119  | 19      |
+| challenge                                    | 447             | 171719 | 205722 | 205722 | 24      |
+| getRow                                       | 14771           | 15720  | 14771  | 26771  | 99      |
+| move                                         | 640             | 15998  | 10349  | 95468  | 81      |
+| setFee                                       | 2573            | 5024   | 5024   | 7475   | 2       |
+| tokenURI                                     | 266875          | 294871 | 270088 | 570343 | 29      |
 | withdraw                                     | 9498            | 9498   | 9498   | 9498   | 1       |

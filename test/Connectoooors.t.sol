@@ -272,23 +272,6 @@ contract ConnectoooorsTest is Test {
         _setFee(bob, _fee);
     }
 
-    /// ==========================
-    /// ===== TOGGLE ANIMATE =====
-    /// ==========================
-    function testToggleAnimateSuccess() public {
-        // execute
-        _toggleAnimate(address(this));
-        // assert
-        assertTrue(IMetadata(metadata).animate());
-    }
-
-    function testToggleAnimateRevertNotOwner() public {
-        // revert
-        vm.expectRevert(NOT_OWNER_ERROR);
-        // execute
-        _toggleAnimate(bob);
-    }
-
     /// ====================
     /// ===== WITHDRAW =====
     /// ====================
@@ -361,16 +344,18 @@ contract ConnectoooorsTest is Test {
         _move(bob, gameId, 0, 1);
         _move(eve, gameId, 1, 1);
         _move(bob, gameId, 0, 2);
-        _move(eve, gameId, 1, 0);
+        _move(eve, gameId, 0, 4);
         _move(bob, gameId, 1, 2);
-        _move(eve, gameId, 2, 2);
+        _move(eve, gameId, 1, 4);
         _move(bob, gameId, 0, 3);
         _move(eve, gameId, 1, 3);
         _move(bob, gameId, 2, 3);
         _move(eve, gameId, 3, 3);
+        _move(bob, gameId, 0, 5);
+        _move(eve, gameId, 2, 2);
         // assert
         assertEq(turn, PLAYER_2);
-        assertEq(moves, 11);
+        assertEq(moves, 13);
         assertEq(uint8(state), uint8(State.SUCCESS));
         assertEq(uint8(strat), uint8(Strat.ASCENDING));
         assertEq(connectors.ownerOf(gameId), eve);
@@ -514,10 +499,6 @@ contract ConnectoooorsTest is Test {
 
     function _setFee(address _sender, uint256 _fee) internal prank(_sender) {
         connectors.setFee(_fee);
-    }
-
-    function _toggleAnimate(address _sender) internal prank(_sender) {
-        connectors.toggleAnimate();
     }
 
     function _withdraw(address _sender, address payable _to) internal prank(_sender) {

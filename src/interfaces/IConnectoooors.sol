@@ -77,11 +77,9 @@ interface IConnectoooors {
 
     function metadata() external view returns (address);
 
-    function move(uint256 _gameId, uint8 _row, uint8 _col) external payable returns (Strat);
+    function move(uint256 _gameId, uint8 _row, uint8 _col) external returns (Strat);
 
     function setFee(uint256 _fee) external payable;
-
-    function toggleAnimate() external payable;
 
     function totalSupply() external view returns (uint8);
 

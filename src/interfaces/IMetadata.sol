@@ -16,8 +16,6 @@ interface IMetadata {
 
     function YELLOW() external view returns (string memory);
 
-    function animate() external view returns (bool);
-
     function generateSVG(
         uint256 _gameId,
         uint8 _row,
@@ -32,6 +30,4 @@ interface IMetadata {
     function register(uint256 _gameId) external;
 
     function renders(uint256) external view returns (string memory, string memory, string memory);
-
-    function toggleAnimate() external;
 }

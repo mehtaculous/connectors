@@ -7,6 +7,7 @@ import "src/Connectoooors.sol";
 contract DeployScript is Script {
     Connectoooors connectors;
     address metadata;
+    address constant OPPONENT = 0x16107A92e44E105b135d5F84D5730E9EAaa167B7;
 
     function run() public {
         vm.startBroadcast();
@@ -17,5 +18,9 @@ contract DeployScript is Script {
     function deploy() public {
         connectors = new Connectoooors();
         metadata = connectors.metadata();
+    }
+
+    function challenge() public {
+        connectors.challenge(OPPONENT);
     }
 }

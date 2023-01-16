@@ -83,16 +83,16 @@ contract Connectors is IConnectors, ERC721, ERC721Holder, Ownable {
         Game storage game = games[_gameId];
         uint8 playerId = _getPlayerId(game, msg.sender);
         // Reverts if game state is not Inactive
-        if (State.INACTIVE != game.state) revert InvalidState();
+        if (game.state != State.INACTIVE) revert InvalidState();
         // Reverts if caller is not authorized to execute move
-        if (playerId != game.turn) revert NotAuthorized();
+        if (game.turn != playerId) revert NotAuthorized();
         // Reverts if payment amount is incorrect
         if (msg.value != fee) revert InvalidPayment();
 
         // Sets game state to Active
         game.state = State.ACTIVE;
 
-        // Emits event for beginning a game
+        // Emits event for beginning a new game
         emit Begin(_gameId, msg.sender, game.state);
 
         // Executes first move on board
@@ -113,8 +113,8 @@ contract Connectors is IConnectors, ERC721, ERC721Holder, Ownable {
         // Reverts if game state is not Active
         if (game.state != State.ACTIVE) revert InvalidState();
         // Reverts if caller is not authorized to execute move
-        if (playerId != game.turn) revert NotAuthorized();
-        // Reverts if cell is occupied or placement is not valid
+        if (game.turn != playerId) revert NotAuthorized();
+        // Reverts if cell is occupied or row placement is not valid
         if (board[_row][_col] != 0 || (_row > 0 && board[_row - 1][_col] == 0))
             revert InvalidMove();
 
@@ -122,7 +122,7 @@ contract Connectors is IConnectors, ERC721, ERC721Holder, Ownable {
         ++game.moves;
         uint8 moves = game.moves;
 
-        // Records move for caller
+        // Records player move
         game.row = _row;
         game.col = _col;
         board[_row][_col] = playerId;
@@ -130,7 +130,7 @@ contract Connectors is IConnectors, ERC721, ERC721Holder, Ownable {
         // Emits event for creating new move on board
         emit Move(_gameId, msg.sender, moves, _row, _col);
 
-        // Checks if minimum number of moves for possible win have been made
+        // Checks if minimum number of moves for a possible win have been made
         if (moves > 6) {
             // Checks horizontal placement of move
             result = _checkHorizontal(playerId, _row, _col, board);
@@ -152,11 +152,11 @@ contract Connectors is IConnectors, ERC721, ERC721Holder, Ownable {
 
             // Checks if number of winning games is less than maximum
             if (totalSupply < MAX_SUPPLY) {
-                // Burns current token
+                // Burns game board
                 _burn(_gameId);
                 // Increments total supply
                 ++totalSupply;
-                // Mints winning board to caller
+                // Mints connector to caller
                 _safeMint(msg.sender, _gameId);
             }
         } else {
@@ -166,22 +166,22 @@ contract Connectors is IConnectors, ERC721, ERC721Holder, Ownable {
             // Checks if number of moves has reached maximum moves
             if (moves == ROW * COL) {
                 // Updates state of game to draw
-                game.state = State.DRAW;
                 game.turn = 0;
+                game.state = State.DRAW;
                 // Emits event for finishing game with a draw
                 emit Result(_gameId, address(0), game.state, game.strat, board);
             }
         }
     }
 
-    /// @notice Sets fee amount required to challenge or begin new game
+    /// @notice Sets fee amount required to play game
     /// @param _fee Amount in ether
     function setFee(uint256 _fee) external payable onlyOwner {
         fee = _fee;
     }
 
-    /// @notice Withdraws balance from contract
-    /// @param _to Target address transferring balance to
+    /// @notice Withdraws balance from this contract
+    /// @param _to Target address for transferring balance to
     function withdraw(address payable _to) external payable onlyOwner {
         (bool success, ) = _to.call{value: address(this).balance}("");
         if (!success) revert TransferFailed();

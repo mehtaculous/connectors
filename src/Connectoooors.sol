@@ -190,7 +190,7 @@ contract Connectoooors is IConnectoooors, ERC721, ERC721Holder, Ownable {
     /// @param _to Target address transferring balance to
     function withdraw(address payable _to) external payable onlyOwner {
         (bool success, ) = _to.call{value: address(this).balance}("");
-        if (!success) revert();
+        if (!success) revert InvalidTransfer();
     }
 
     /// @notice Gets the entire column for a given row
@@ -227,14 +227,7 @@ contract Connectoooors is IConnectoooors, ERC721, ERC721Holder, Ownable {
         string memory description = "Just a friendly on-chain game of Connect Four. Your move anon.";
         string memory playerTraits = generatePlayerTraits(_tokenId, player1, player2);
         string memory gameTraits = generateGameTraits(game);
-        string memory image = IMetadata(metadata).generateSVG(
-            _tokenId,
-            game.row,
-            game.col,
-            PLAYER_1,
-            PLAYER_2,
-            board
-        );
+        string memory image = IMetadata(metadata).generateSVG(_tokenId, game.row, game.col, board);
 
         return
             string(

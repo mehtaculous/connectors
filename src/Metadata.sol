@@ -27,8 +27,6 @@ contract Metadata is IMetadata, Ownable {
         uint256 _gameId,
         uint8 _row,
         uint8 _col,
-        uint8 _player1,
-        uint8 _player2,
         uint8[COL][ROW] memory _board
     ) external view returns (string memory svg) {
         Render memory render = renders[_gameId];
@@ -37,9 +35,9 @@ contract Metadata is IMetadata, Ownable {
             board = string.concat(board, _generateGrid(y));
             for (uint256 x; x < ROW; ++x) {
                 string memory cell;
-                if (_board[x][y] == _player1) {
+                if (_board[x][y] == PLAYER_1) {
                     cell = _generateCell(x, y, _row, _col, render.player1);
-                } else if (_board[x][y] == _player2) {
+                } else if (_board[x][y] == PLAYER_2) {
                     cell = _generateCell(x, y, _row, _col, render.player2);
                 }
                 board = string.concat(board, cell);

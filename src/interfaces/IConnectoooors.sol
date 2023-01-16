@@ -40,6 +40,7 @@ interface IConnectoooors {
     error InvalidPayment();
     error InvalidPlayer();
     error InvalidState();
+    error InvalidTransfer();
     error NotAuthorized();
 
     event Challenge(uint256 indexed _gameId, address indexed _player1, address indexed _player2);

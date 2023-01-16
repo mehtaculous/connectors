@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.13;
 
-import {COL, ROW, State} from "src/interfaces/IConnectoooors.sol";
+import {COL, ROW, PLAYER_1, PLAYER_2, State} from "src/interfaces/IConnectoooors.sol";
 
 struct Render {
     string base;
@@ -22,8 +22,6 @@ interface IMetadata {
         uint256 _gameId,
         uint8 _row,
         uint8 _col,
-        uint8 _player1,
-        uint8 _player2,
         uint8[COL][ROW] memory _board
     ) external view returns (string memory);
 

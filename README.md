@@ -11,7 +11,7 @@ Just a friendly on-chain game of Connect Four. Your move anon.
 
 - Challenge any EOA to a game of Connect Four.
 - Each new game mints an ERC-721 token of an empty game board.
-- Follow along with the game on any [marketplace](https://testnets.opensea.io/collection/connectoooors-v4) that supports on-chain art.
+- Follow along with the game on any [marketplace](https://testnets.opensea.io/collection/connectors-v3) that supports on-chain art.
 
 ### `Begin`
 

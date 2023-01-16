@@ -33,15 +33,15 @@ struct Game {
     uint8[COL][ROW] board;
 }
 
-interface IConnectoooors {
+interface IConnectors {
     error InvalidGame();
     error InvalidMatchup();
     error InvalidMove();
     error InvalidPayment();
     error InvalidPlayer();
     error InvalidState();
-    error InvalidTransfer();
     error NotAuthorized();
+    error TransferFailed();
 
     event Challenge(uint256 indexed _gameId, address indexed _player1, address indexed _player2);
 

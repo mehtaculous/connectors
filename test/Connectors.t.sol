@@ -2,31 +2,31 @@
 pragma solidity ^0.8.13;
 
 import "forge-std/Test.sol";
-import "src/Connectoooors.sol";
-import "src/interfaces/IConnectoooors.sol";
+import "src/Connectors.sol";
+import "src/interfaces/IConnectors.sol";
 
-contract ConnectoooorsTest is Test {
+contract ConnectorsTest is Test {
     // Contracts
-    Connectoooors connectors;
+    Connectors connectors;
 
     // Users
     address bob = address(111);
     address eve = address(222);
 
+    // State
+    address metadata;
+    uint256 gameId;
+
     // Game
     State state;
     Strat strat;
+    uint8 row;
+    uint8 col;
     uint8 moves;
     uint8 turn;
     address player1;
     address player2;
     uint8[COL][ROW] board;
-
-    // State
-    address metadata;
-    uint8 row;
-    uint8 col;
-    uint256 gameId;
 
     // Constants
     uint256 constant FEE = .042 ether;
@@ -34,13 +34,13 @@ contract ConnectoooorsTest is Test {
 
     // Errors
     bytes NOT_OWNER_ERROR = bytes("Ownable: caller is not the owner");
-    bytes4 INVALID_GAME_ERROR = IConnectoooors.InvalidGame.selector;
-    bytes4 INVALID_MATCHUP_ERROR = IConnectoooors.InvalidMatchup.selector;
-    bytes4 INVALID_MOVE_ERROR = IConnectoooors.InvalidMove.selector;
-    bytes4 INVALID_PAYMENT_ERROR = IConnectoooors.InvalidPayment.selector;
-    bytes4 INVALID_PLAYER_ERROR = IConnectoooors.InvalidPlayer.selector;
-    bytes4 INVALID_STATE_ERROR = IConnectoooors.InvalidState.selector;
-    bytes4 NOT_AUTHORIZED_ERROR = IConnectoooors.NotAuthorized.selector;
+    bytes4 INVALID_GAME_ERROR = IConnectors.InvalidGame.selector;
+    bytes4 INVALID_MATCHUP_ERROR = IConnectors.InvalidMatchup.selector;
+    bytes4 INVALID_MOVE_ERROR = IConnectors.InvalidMove.selector;
+    bytes4 INVALID_PAYMENT_ERROR = IConnectors.InvalidPayment.selector;
+    bytes4 INVALID_PLAYER_ERROR = IConnectors.InvalidPlayer.selector;
+    bytes4 INVALID_STATE_ERROR = IConnectors.InvalidState.selector;
+    bytes4 NOT_AUTHORIZED_ERROR = IConnectors.NotAuthorized.selector;
 
     /// =====================
     /// ===== MODIFIERS =====
@@ -63,15 +63,15 @@ contract ConnectoooorsTest is Test {
     /// ===== SETUP =====
     /// =================
     function setUp() public {
-        connectors = new Connectoooors();
+        connectors = new Connectors();
         metadata = connectors.metadata();
 
         vm.deal(bob, ETH_BALANCE);
         vm.deal(eve, ETH_BALANCE);
         vm.deal(address(this), ETH_BALANCE);
 
-        vm.label(address(connectors), "Connectoooors");
-        vm.label(address(this), "ConnectoooorsTest");
+        vm.label(address(connectors), "Connectors");
+        vm.label(address(this), "ConnectorsTest");
         vm.label(metadata, "Metadata");
         vm.label(bob, "Bob");
         vm.label(eve, "Eve");

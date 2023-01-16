@@ -1,4 +1,4 @@
-# Connectoooors
+# Connectors
 
 Just a friendly on-chain game of Connect Four. Your move anon.
 
@@ -9,7 +9,7 @@ Just a friendly on-chain game of Connect Four. Your move anon.
 
 > Creates a new game and mints a new token
 
-- Challenge an opponent to game of Connect Four.
+- Challenge any EOA to a game of Connect Four.
 - Each new game mints an ERC-721 token of an empty game board.
 - Follow along with the game on any [marketplace](https://testnets.opensea.io/collection/connectoooors-v4) that supports on-chain art.
 
@@ -30,7 +30,7 @@ Just a friendly on-chain game of Connect Four. Your move anon.
 - There is a maximum number of **42** moves per game.
 - Every move dynamically updates the metadata and SVG image of the NFT on-chain and in real time.
 - Players can win by getting **4** in a row *horizontally*, *vertically* or *diagonally*.
-- When a player wins, they are transferred the winning game board (total supply is capped at **100**).
+- When a player wins, they are transferred the winning game board (total supply of Connectors is capped at **100**).
 - If the game ends in a draw (or if max supply has been reached), the NFT will remain with the smart contract.
 
 
@@ -38,7 +38,7 @@ Just a friendly on-chain game of Connect Four. Your move anon.
 
 | Name                | Address                                                                                                                      |
 | ---------------     | ---------------------------------------------------------------------------------------------------------------------------- |
-| `Connectoooors.sol` | [](https://etherscan.io/address/) |
+| `Connectors.sol`    | [](https://etherscan.io/address/) |
 | `Metadata.sol`      | [](https://etherscan.io/address/) |
 
 
@@ -46,21 +46,22 @@ Just a friendly on-chain game of Connect Four. Your move anon.
 
 | Name                | Address                                                                                                                      |
 | ---------------     | ---------------------------------------------------------------------------------------------------------------------------- |
-| `Connectoooors.sol` | [0x571bbd7da16f6b428a891fa5944586cc2e47ac83](https://goerli.etherscan.io/address/0x571bbd7da16f6b428a891fa5944586cc2e47ac83) |
+| `Connectors.sol`    | [0x571bbd7da16f6b428a891fa5944586cc2e47ac83](https://goerli.etherscan.io/address/0x571bbd7da16f6b428a891fa5944586cc2e47ac83) |
 | `Metadata.sol`      | [0x10c6Ddc93a58161050eaddB184D7A9d28881C285](https://goerli.etherscan.io/address/0x10c6Ddc93a58161050eaddB184D7A9d28881C285) |
 
 
 ### Gas Report
 
-| Connectoooors.sol                            |                 |        |        |        |         |
-|----------------------------------------------|-----------------|--------|--------|--------|---------|
-| Deployment Cost                              | Deployment Size |        |        |        |         |
-| 4707222                                      | 23530           |        |        |        |         |
-| Function Name                                | min             | avg    | median | max    | # calls |
-| begin                                        | 657             | 24017  | 29219  | 31119  | 19      |
-| challenge                                    | 447             | 171719 | 205722 | 205722 | 24      |
-| getRow                                       | 14771           | 15720  | 14771  | 26771  | 99      |
-| move                                         | 640             | 15998  | 10349  | 95468  | 81      |
-| setFee                                       | 2573            | 5024   | 5024   | 7475   | 2       |
-| tokenURI                                     | 266875          | 294871 | 270088 | 570343 | 29      |
-| withdraw                                     | 9498            | 9498   | 9498   | 9498   | 1       |
+| Connectors.sol                         |                 |        |        |        |         |
+|----------------------------------------|-----------------|--------|--------|--------|---------|
+| Deployment Cost                        | Deployment Size |        |        |        |         |
+| 4727054                                | 23626           |        |        |        |         |
+| Function Name                          | min             | avg    | median | max    | # calls |
+| begin                                  | 657             | 24012  | 29219  | 31119  | 19      |
+| challenge                              | 447             | 171719 | 205722 | 205722 | 24      |
+| games                                  | 1117            | 1277   | 1117   | 5117   | 125     |
+| getRow                                 | 14771           | 15701  | 14771  | 26771  | 101     |
+| move                                   | 640             | 15883  | 10349  | 94070  | 83      |
+| setFee                                 | 2573            | 5024   | 5024   | 7475   | 2       |
+| tokenURI                               | 267183          | 295531 | 270400 | 570652 | 29      |
+| withdraw                               | 9498            | 9498   | 9498   | 9498   | 1       |

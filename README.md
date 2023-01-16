@@ -7,7 +7,7 @@ Just a friendly on-chain game of Connect Four. Your move anon.
 
 ### `Challenge`
 
-> Creates a new game and mints a new token
+> Creates a new game and mints an empty game board
 
 - Challenge any EOA to a game of Connect Four.
 - Each new game mints an ERC-721 token of an empty game board.
@@ -30,7 +30,7 @@ Just a friendly on-chain game of Connect Four. Your move anon.
 - There is a maximum number of **42** moves per game.
 - Every move dynamically updates the metadata and SVG image of the NFT on-chain and in real time.
 - Players can win by getting **4** in a row *horizontally*, *vertically* or *diagonally*.
-- When a player wins, they are transferred the winning game board (total supply of Connectors is capped at **100**).
+- When a player wins, they are transferred the winning game board (total supply is capped at **100**).
 - If the game ends in a draw (or if max supply has been reached), the NFT will remain with the smart contract.
 
 
@@ -46,8 +46,8 @@ Just a friendly on-chain game of Connect Four. Your move anon.
 
 | Name                | Address                                                                                                                      |
 | ---------------     | ---------------------------------------------------------------------------------------------------------------------------- |
-| `Connectors.sol`    | [0x571bbd7da16f6b428a891fa5944586cc2e47ac83](https://goerli.etherscan.io/address/0x571bbd7da16f6b428a891fa5944586cc2e47ac83) |
-| `Metadata.sol`      | [0x10c6Ddc93a58161050eaddB184D7A9d28881C285](https://goerli.etherscan.io/address/0x10c6Ddc93a58161050eaddB184D7A9d28881C285) |
+| `Connectors.sol`    | [0x62455e0E1Cf34a88b64d15dAd96137e73388C266](https://goerli.etherscan.io/address/0x62455e0E1Cf34a88b64d15dAd96137e73388C266) |
+| `Metadata.sol`      | [0x617c35f2ecd44C7Ac12F745dC9081C8a379102fA](https://goerli.etherscan.io/address/0x617c35f2ecd44C7Ac12F745dC9081C8a379102fA) |
 
 
 ### Gas Report

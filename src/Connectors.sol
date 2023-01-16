@@ -27,16 +27,16 @@ contract Connectors is IConnectors, ERC721, ERC721Holder, Ownable {
     using Strings for uint256;
     /// @dev Interface identifier for royalty standard
     bytes4 constant _INTERFACE_ID_ERC2981 = 0x2a55205a;
-    /// @dev Maximum supply of winning game boards
+    /// @notice Maximum supply of winning game boards
     uint8 public constant MAX_SUPPLY = 100;
+    /// @notice Current supply of winning game boards
+    uint8 public totalSupply;
     /// @notice Address of Metadata contract
     address public immutable metadata;
     /// @notice Current game ID
     uint256 public currentId;
-    /// @notice Current number of winning game boards
-    uint8 public totalSupply;
     /// @notice Ether amount required to play per player
-    uint256 public fee = 0.042 ether;
+    uint256 public fee = 0.0420 ether;
     /// @notice Mapping of game ID to game info
     mapping(uint256 => Game) public games;
 

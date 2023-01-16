@@ -16,16 +16,16 @@ contract ConnectoooorsTest is Test {
     // Game
     State state;
     Strat strat;
+    uint8 moves;
+    uint8 turn;
     address player1;
     address player2;
-    address turn;
-    uint96 moves;
-    address[COL][ROW] board;
+    uint8[COL][ROW] board;
 
     // State
     address metadata;
-    uint256 row;
-    uint256 col;
+    uint8 row;
+    uint8 col;
     uint256 gameId;
 
     // Constants
@@ -87,8 +87,8 @@ contract ConnectoooorsTest is Test {
         assertEq(gameId, 1);
         assertEq(player1, bob);
         assertEq(player2, eve);
-        assertEq(turn, eve);
-        assertEq(uint256(state), uint256(State.INACTIVE));
+        assertEq(turn, PLAYER_2);
+        assertEq(uint8(state), uint8(State.INACTIVE));
         assertEq(bob.balance, ETH_BALANCE - FEE);
         assertEq(address(connectors).balance, FEE);
         assertEq(connectors.ownerOf(gameId), address(connectors));
@@ -126,23 +126,23 @@ contract ConnectoooorsTest is Test {
     /// =================
     /// ===== BEGIN =====
     /// =================
-    function testBeginSuccess(uint256 _col) public {
+    function testBeginSuccess(uint8 _col) public {
         // setup
         testChallengeSuccess();
         _col = _boundCol(_col, 0, COL);
         // execute
         _begin(eve, gameId, row, _col, FEE);
         // assert
-        assertEq(board[row][col], eve);
+        assertEq(board[row][col], PLAYER_2);
         assertEq(moves, 1);
-        assertEq(turn, bob);
-        assertEq(uint256(state), uint256(State.ACTIVE));
+        assertEq(turn, PLAYER_1);
+        assertEq(uint8(state), uint8(State.ACTIVE));
         assertEq(eve.balance, ETH_BALANCE - FEE);
         assertEq(address(connectors).balance, FEE * 2);
         connectors.tokenURI(gameId);
     }
 
-    function testBeginRevertInvalidGame(uint256 _col) public {
+    function testBeginRevertInvalidGame(uint8 _col) public {
         // setup
         testChallengeSuccess();
         _col = _boundCol(_col, 0, COL);
@@ -152,7 +152,7 @@ contract ConnectoooorsTest is Test {
         _begin(eve, ++gameId, row, _col, FEE);
     }
 
-    function testBeginRevertInvalidState(uint256 _col) public {
+    function testBeginRevertInvalidState(uint8 _col) public {
         // setup
         testBeginSuccess(_col);
         _col = _boundCol(_col, 0, COL);
@@ -162,7 +162,7 @@ contract ConnectoooorsTest is Test {
         _begin(eve, gameId, row, _col, FEE);
     }
 
-    function testBeginRevertNotAuthorized(uint256 _col) public {
+    function testBeginRevertNotAuthorized(uint8 _col) public {
         // setup
         testChallengeSuccess();
         _col = _boundCol(_col, 0, COL);
@@ -172,10 +172,9 @@ contract ConnectoooorsTest is Test {
         _begin(bob, gameId, row, _col, FEE);
     }
 
-    function testBeginRevertInvalidPayment(uint256 _col) public {
+    function testBeginRevertInvalidPayment(uint8 _col) public {
         // setup
         testChallengeSuccess();
-        _setFee(address(this), 1 ether);
         _col = _boundCol(_col, 0, COL);
         // revert
         vm.expectRevert(INVALID_PAYMENT_ERROR);
@@ -193,13 +192,13 @@ contract ConnectoooorsTest is Test {
         // execute
         _move(bob, gameId, row, col + 1);
         // assert
-        assertEq(board[row][col], bob);
+        assertEq(board[row][col], PLAYER_1);
+        assertEq(turn, PLAYER_2);
         assertEq(moves, 2);
-        assertEq(turn, eve);
         connectors.tokenURI(gameId);
     }
 
-    function testMoveRevertInvalidGame(uint256 _col) public {
+    function testMoveRevertInvalidGame(uint8 _col) public {
         // setup
         testBeginSuccess(_col);
         _col = _boundCol(_col, 0, COL);
@@ -209,7 +208,7 @@ contract ConnectoooorsTest is Test {
         _move(bob, ++gameId, row, _col);
     }
 
-    function testMoveRevertInvalidState(uint256 _col) public {
+    function testMoveRevertInvalidState(uint8 _col) public {
         // setup
         testChallengeSuccess();
         _col = _boundCol(_col, 0, COL);
@@ -219,7 +218,7 @@ contract ConnectoooorsTest is Test {
         _move(bob, gameId, row, _col);
     }
 
-    function testMoveRevertNotAuthorized(uint256 _col) public {
+    function testMoveRevertNotAuthorized(uint8 _col) public {
         // setup
         testBeginSuccess(_col);
         _col = _boundCol(_col, 0, COL);
@@ -229,7 +228,7 @@ contract ConnectoooorsTest is Test {
         _move(eve, gameId, row, _col);
     }
 
-    function testMoveRevertRowOutOfBounds(uint256 _col) public {
+    function testMoveRevertRowOutOfBounds(uint8 _col) public {
         // setup
         testBeginSuccess(_col);
         // revert
@@ -238,7 +237,7 @@ contract ConnectoooorsTest is Test {
         _move(bob, gameId, ROW, col);
     }
 
-    function testMoveRevertColOutOfBounds(uint256 _col) public {
+    function testMoveRevertColOutOfBounds(uint8 _col) public {
         // setup
         testBeginSuccess(_col);
         // revert
@@ -247,7 +246,7 @@ contract ConnectoooorsTest is Test {
         _move(bob, gameId, row, COL);
     }
 
-    function testMoveRevertInvalidMove(uint256 _col) public {
+    function testMoveRevertInvalidMove(uint8 _col) public {
         // setup
         testBeginSuccess(_col);
         // revert
@@ -293,7 +292,7 @@ contract ConnectoooorsTest is Test {
     /// ====================
     /// ===== WITHDRAW =====
     /// ====================
-    function testWithdraw(uint256 _col) public {
+    function testWithdraw(uint8 _col) public {
         // setup
         testBeginSuccess(_col);
         // execute
@@ -326,7 +325,7 @@ contract ConnectoooorsTest is Test {
         _move(bob, gameId, 3, 0);
         _move(eve, gameId, 0, 3);
         // assert
-        assertEq(turn, eve);
+        assertEq(turn, PLAYER_2);
         assertEq(moves, 7);
         assertEq(uint256(state), uint256(State.SUCCESS));
         assertEq(uint256(strat), uint256(Strat.HORIZONTAL));
@@ -346,10 +345,10 @@ contract ConnectoooorsTest is Test {
         _move(bob, gameId, 0, 3);
         _move(eve, gameId, 3, 0);
         // assert
-        assertEq(turn, eve);
+        assertEq(turn, PLAYER_2);
         assertEq(moves, 7);
-        assertEq(uint256(state), uint256(State.SUCCESS));
-        assertEq(uint256(strat), uint256(Strat.VERTICAL));
+        assertEq(uint8(state), uint8(State.SUCCESS));
+        assertEq(uint8(strat), uint8(Strat.VERTICAL));
         assertEq(connectors.ownerOf(gameId), eve);
         assertEq(connectors.totalSupply(), 1);
         connectors.tokenURI(gameId);
@@ -370,10 +369,10 @@ contract ConnectoooorsTest is Test {
         _move(bob, gameId, 2, 3);
         _move(eve, gameId, 3, 3);
         // assert
-        assertEq(turn, eve);
+        assertEq(turn, PLAYER_2);
         assertEq(moves, 11);
-        assertEq(uint256(state), uint256(State.SUCCESS));
-        assertEq(uint256(strat), uint256(Strat.ASCENDING));
+        assertEq(uint8(state), uint8(State.SUCCESS));
+        assertEq(uint8(strat), uint8(Strat.ASCENDING));
         assertEq(connectors.ownerOf(gameId), eve);
         assertEq(connectors.totalSupply(), 1);
         connectors.tokenURI(gameId);
@@ -394,10 +393,10 @@ contract ConnectoooorsTest is Test {
         _move(bob, gameId, 2, 2);
         _move(eve, gameId, 0, 3);
         // assert
-        assertEq(turn, eve);
+        assertEq(turn, PLAYER_2);
         assertEq(moves, 11);
-        assertEq(uint256(state), uint256(State.SUCCESS));
-        assertEq(uint256(strat), uint256(Strat.DESCENDING));
+        assertEq(uint8(state), uint8(State.SUCCESS));
+        assertEq(uint8(strat), uint8(Strat.DESCENDING));
         assertEq(connectors.ownerOf(gameId), eve);
         assertEq(connectors.totalSupply(), 1);
         connectors.tokenURI(gameId);
@@ -452,10 +451,10 @@ contract ConnectoooorsTest is Test {
         _move(eve, gameId, 4, 6);
         _move(bob, gameId, 5, 6);
         // assert
-        assertEq(turn, address(0));
+        assertEq(turn, 0);
         assertEq(moves, ROW * COL);
-        assertEq(uint256(state), uint256(State.DRAW));
-        assertEq(uint256(strat), uint256(Strat.NONE));
+        assertEq(uint8(state), uint8(State.DRAW));
+        assertEq(uint8(strat), uint8(Strat.NONE));
         assertEq(connectors.ownerOf(gameId), address(connectors));
         assertEq(connectors.totalSupply(), 0);
         connectors.tokenURI(gameId);
@@ -491,8 +490,8 @@ contract ConnectoooorsTest is Test {
     function _begin(
         address _sender,
         uint256 _gameId,
-        uint256 _row,
-        uint256 _col,
+        uint8 _row,
+        uint8 _col,
         uint256 _fee
     ) internal prank(_sender) {
         connectors.begin{value: _fee}(_gameId, _row, _col);
@@ -504,8 +503,8 @@ contract ConnectoooorsTest is Test {
     function _move(
         address _sender,
         uint256 _gameId,
-        uint256 _row,
-        uint256 _col
+        uint8 _row,
+        uint8 _col
     ) internal prank(_sender) {
         connectors.move(_gameId, _row, _col);
         _setState(gameId);
@@ -530,24 +529,20 @@ contract ConnectoooorsTest is Test {
     }
 
     function _setState(uint256 _gameId) internal {
-        (state, strat, player1, player2, moves, turn, , ) = connectors.games(_gameId);
+        (state, strat, , , moves, turn, player1, player2) = connectors.games(_gameId);
     }
 
-    function _setMove(uint256 _row, uint256 _col) internal {
+    function _setMove(uint8 _row, uint8 _col) internal {
         row = _row;
         col = _col;
     }
 
-    function _setBoard(uint256 _gameId, uint256 _row) internal {
+    function _setBoard(uint256 _gameId, uint8 _row) internal {
         board[_row] = connectors.getRow(_gameId, _row);
     }
 
-    function _boundCol(
-        uint256 _col,
-        uint256 _min,
-        uint256 _max
-    ) internal view returns (uint256 value) {
-        value = bound(_col, _min, _max);
+    function _boundCol(uint8 _col, uint8 _min, uint8 _max) internal view returns (uint8 value) {
+        value = uint8(bound(_col, _min, _max));
         vm.assume(value >= _min && value < _max);
     }
 }

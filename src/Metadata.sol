@@ -3,7 +3,6 @@ pragma solidity 0.8.13;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
-
 import "src/interfaces/IMetadata.sol";
 
 contract Metadata is IMetadata, Ownable {
@@ -26,11 +25,11 @@ contract Metadata is IMetadata, Ownable {
 
     function generateSVG(
         uint256 _gameId,
-        uint256 _row,
-        uint256 _col,
-        address _player1,
-        address _player2,
-        address[COL][ROW] memory _board
+        uint8 _row,
+        uint8 _col,
+        uint8 _player1,
+        uint8 _player2,
+        uint8[COL][ROW] memory _board
     ) external view returns (string memory svg) {
         Render memory render = renders[_gameId];
         string memory board = _generateBoard();
@@ -72,8 +71,8 @@ contract Metadata is IMetadata, Ownable {
     function _generateCell(
         uint256 _x,
         uint256 _y,
-        uint256 _row,
-        uint256 _col,
+        uint8 _row,
+        uint8 _col,
         string memory _checker
     ) internal view returns (string memory cell) {
         uint256 cy = 550 - (_x * 100);

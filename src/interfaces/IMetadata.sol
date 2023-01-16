@@ -20,11 +20,11 @@ interface IMetadata {
 
     function generateSVG(
         uint256 _gameId,
-        uint256 _row,
-        uint256 _col,
-        address _player1,
-        address _player2,
-        address[COL][ROW] memory _board
+        uint8 _row,
+        uint8 _col,
+        uint8 _player1,
+        uint8 _player2,
+        uint8[COL][ROW] memory _board
     ) external view returns (string memory);
 
     function getChecker(uint256 _gameId) external view returns (string memory, string memory);

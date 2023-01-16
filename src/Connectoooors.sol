@@ -16,27 +16,26 @@ import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/utils/ERC721Holder.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "src/Metadata.sol";
-
 import "src/interfaces/IConnectoooors.sol";
 
 /// @title Connectoooors
 /// @author swa.eth
 /// @notice Just a friendly on-chain game of Connect Four
 contract Connectoooors is IConnectoooors, ERC721, ERC721Holder, Ownable {
-    using Strings for uint48;
-    using Strings for uint96;
+    using Strings for uint8;
     using Strings for uint160;
     using Strings for uint256;
+
     /// @dev Interface identifier for royalty standard
     bytes4 constant _INTERFACE_ID_ERC2981 = 0x2a55205a;
     /// @dev Maximum supply of winning game boards
-    uint256 public constant MAX_SUPPLY = 100;
+    uint8 public constant MAX_SUPPLY = 100;
     /// @notice Address of Metadata contract
     address public immutable metadata;
     /// @notice Current game ID
     uint256 public currentId;
     /// @notice Current number of games won
-    uint256 public totalSupply;
+    uint8 public totalSupply;
     /// @notice Ether amount required per player to play
     uint256 public fee = 0.042 ether;
     /// @notice Mapping of game ID to game info
@@ -62,7 +61,7 @@ contract Connectoooors is IConnectoooors, ERC721, ERC721Holder, Ownable {
         Game storage game = games[++currentId];
         game.player1 = msg.sender;
         game.player2 = _opponent;
-        game.turn = _opponent;
+        game.turn = PLAYER_2;
 
         // Registers game on metadata contract
         IMetadata(metadata).register(currentId);
@@ -79,14 +78,15 @@ contract Connectoooors is IConnectoooors, ERC721, ERC721Holder, Ownable {
     /// @param _gameId ID of the game
     /// @param _row Value of row placement on board (0-5)
     /// @param _col Value of column placement on board (0-6)
-    function begin(uint256 _gameId, uint256 _row, uint256 _col) external payable {
+    function begin(uint256 _gameId, uint8 _row, uint8 _col) external payable {
         // Reverts if game does not exist
         if (_gameId == 0 || _gameId > currentId) revert InvalidGame();
         Game storage game = games[_gameId];
         // Reverts if game state is not Inactive
         if (State.INACTIVE != game.state) revert InvalidState();
         // Reverts if caller is not authorized to execute move
-        if (msg.sender != game.turn) revert NotAuthorized();
+        uint8 player = _getPlayer(game, msg.sender);
+        if (player != game.turn) revert NotAuthorized();
         // Reverts if payment amount is incorrect
         if (msg.value != fee) revert InvalidPayment();
 
@@ -105,31 +105,28 @@ contract Connectoooors is IConnectoooors, ERC721, ERC721Holder, Ownable {
     /// @param _gameId ID of the game
     /// @param _row Value of row placement on board (0-5)
     /// @param _col Value of column placement on board (0-6)
-    function move(
-        uint256 _gameId,
-        uint256 _row,
-        uint256 _col
-    ) public payable returns (Strat result) {
+    function move(uint256 _gameId, uint8 _row, uint8 _col) public payable returns (Strat result) {
         // Reverts if game does not exist
         if (_gameId == 0 || _gameId > currentId) revert InvalidGame();
         Game storage game = games[_gameId];
-        address[COL][ROW] storage board = game.board;
+        uint8[COL][ROW] storage board = game.board;
         // Reverts if game state is not Active
         if (game.state != State.ACTIVE) revert InvalidState();
         // Reverts if caller is not authorized to execute move
-        if (msg.sender != game.turn) revert NotAuthorized();
+        uint8 player = _getPlayer(game, msg.sender);
+        if (player != game.turn) revert NotAuthorized();
         // Reverts if cell is occupied or placement is not valid
-        if (board[_row][_col] != address(0) || (_row > 0 && board[_row - 1][_col] == address(0)))
+        if (board[_row][_col] != 0 || (_row > 0 && board[_row - 1][_col] == 0))
             revert InvalidMove();
 
         // Increments total number of moves made
         ++game.moves;
-        uint256 moves = game.moves;
+        uint8 moves = game.moves;
 
         // Records move for caller
-        game.row = uint48(_row);
-        game.col = uint48(_col);
-        board[_row][_col] = msg.sender;
+        game.row = _row;
+        game.col = _col;
+        board[_row][_col] = player;
 
         // Emits event for creating new move on board
         emit Move(_gameId, msg.sender, moves, _row, _col);
@@ -137,13 +134,13 @@ contract Connectoooors is IConnectoooors, ERC721, ERC721Holder, Ownable {
         // Checks if minimum number of moves for possible win have been made
         if (moves > 6) {
             // Checks horizontal placement of move
-            result = _checkHorizontal(msg.sender, _row, _col, board);
+            result = _checkHorizontal(player, _row, _col, board);
             // Checks vertical placement of move
-            if (result == Strat.NONE) result = _checkVertical(msg.sender, _row, _col, board);
+            if (result == Strat.NONE) result = _checkVertical(player, _row, _col, board);
             // Checks diagonal placement of move ascending from left to right
-            if (result == Strat.NONE) result = _checkAscending(msg.sender, _row, _col, board);
+            if (result == Strat.NONE) result = _checkAscending(player, _row, _col, board);
             // Checks diagonal placement of move descending from left to right
-            if (result == Strat.NONE) result = _checkDescending(msg.sender, _row, _col, board);
+            if (result == Strat.NONE) result = _checkDescending(player, _row, _col, board);
         }
 
         // Checks if result is any of the winning strategies
@@ -152,7 +149,7 @@ contract Connectoooors is IConnectoooors, ERC721, ERC721Holder, Ownable {
             game.strat = result;
             game.state = State.SUCCESS;
             // Emits event for finishing game with a winner
-            emit Result(_gameId, game.turn, game.state, game.strat, board);
+            emit Result(_gameId, msg.sender, game.state, game.strat, board);
 
             // Checks if number of winning games is less than maximum
             if (totalSupply < MAX_SUPPLY) {
@@ -165,15 +162,15 @@ contract Connectoooors is IConnectoooors, ERC721, ERC721Holder, Ownable {
             }
         } else {
             // Updates player turn based on caller
-            game.turn = (msg.sender == game.player1) ? game.player2 : game.player1;
+            game.turn = (msg.sender == game.player1) ? PLAYER_2 : PLAYER_1;
 
             // Checks if number of moves has reached maximum moves
             if (moves == ROW * COL) {
                 // Updates state of game to draw
                 game.state = State.DRAW;
-                game.turn = address(0);
+                game.turn = 0;
                 // Emits event for finishing game with a draw
-                emit Result(_gameId, game.turn, game.state, game.strat, board);
+                emit Result(_gameId, address(0), game.state, game.strat, board);
             }
         }
     }
@@ -199,7 +196,7 @@ contract Connectoooors is IConnectoooors, ERC721, ERC721Holder, Ownable {
     /// @notice Gets the entire column for a given row
     /// @param _gameId ID of the game
     /// @param _row Value of row number on board
-    function getRow(uint256 _gameId, uint256 _row) external view returns (address[COL] memory) {
+    function getRow(uint256 _gameId, uint8 _row) external view returns (uint8[COL] memory) {
         Game memory game = games[_gameId];
         return game.board[_row];
     }
@@ -223,7 +220,7 @@ contract Connectoooors is IConnectoooors, ERC721, ERC721Holder, Ownable {
         _requireMinted(_tokenId);
 
         Game memory game = games[_tokenId];
-        address[COL][ROW] memory board = game.board;
+        uint8[COL][ROW] memory board = game.board;
         address player1 = game.player1;
         address player2 = game.player2;
         string memory name = string.concat("Connectoooor #", _tokenId.toString());
@@ -234,8 +231,8 @@ contract Connectoooors is IConnectoooors, ERC721, ERC721Holder, Ownable {
             _tokenId,
             game.row,
             game.col,
-            player1,
-            player2,
+            PLAYER_1,
+            PLAYER_2,
             board
         );
 
@@ -297,8 +294,13 @@ contract Connectoooors is IConnectoooors, ERC721, ERC721Holder, Ownable {
     function generateGameTraits(Game memory _game) public view returns (string memory) {
         string memory moves = _game.moves.toString();
         string memory status = IMetadata(metadata).getStatus(_game.state);
-        string memory turn = uint160(_game.turn).toHexString(20);
+        string memory turn = uint160(address(0)).toHexString(20);
         string memory label = (_game.state == State.SUCCESS) ? "Winner" : "Turn";
+        if (_game.turn == PLAYER_1) {
+            turn = uint160(_game.player1).toHexString(20);
+        } else if (_game.turn == PLAYER_2) {
+            turn = uint160(_game.player2).toHexString(20);
+        }
         string memory latest = string.concat(
             "(",
             _game.row.toString(),
@@ -311,18 +313,18 @@ contract Connectoooors is IConnectoooors, ERC721, ERC721Holder, Ownable {
             string(
                 abi.encodePacked(
                     '{"trait_type":"Latest", "value":"',
-                        latest,
+                    latest,
                     '"},',
                     '{"trait_type":"Moves", "value":"',
-                        moves,
+                    moves,
                     '"},',
                     '{"trait_type":"Status", "value":"',
-                        status,
+                    status,
                     '"},',
                     '{"trait_type":"',
-                        label,
+                    label,
                     '", "value":"',
-                        turn,
+                    turn,
                     '"}'
                 )
             );
@@ -330,13 +332,13 @@ contract Connectoooors is IConnectoooors, ERC721, ERC721Holder, Ownable {
 
     /// @dev Checks horizontal placement of move on board
     function _checkHorizontal(
-        address _player,
-        uint256 _row,
-        uint256 _col,
-        address[COL][ROW] storage _board
+        uint8 _player,
+        uint8 _row,
+        uint8 _col,
+        uint8[COL][ROW] storage _board
     ) internal view returns (Strat result) {
-        uint256 i;
-        uint256 counter;
+        uint8 i;
+        uint8 counter;
         unchecked {
             for (i = 1; i < 4; ++i) {
                 if (_col == 0) break;
@@ -363,13 +365,13 @@ contract Connectoooors is IConnectoooors, ERC721, ERC721Holder, Ownable {
 
     /// @dev Checks vertical placement of move on board
     function _checkVertical(
-        address _player,
-        uint256 _row,
-        uint256 _col,
-        address[COL][ROW] storage _board
+        uint8 _player,
+        uint8 _row,
+        uint8 _col,
+        uint8[COL][ROW] storage _board
     ) internal view returns (Strat result) {
-        uint256 i;
-        uint256 counter;
+        uint8 i;
+        uint8 counter;
         unchecked {
             for (i = 1; i < 4; ++i) {
                 if (_row == 0) break;
@@ -396,13 +398,13 @@ contract Connectoooors is IConnectoooors, ERC721, ERC721Holder, Ownable {
 
     /// @dev Checks diagonal placement of move ascending from left to right
     function _checkAscending(
-        address _player,
-        uint256 _row,
-        uint256 _col,
-        address[COL][ROW] storage _board
+        uint8 _player,
+        uint8 _row,
+        uint8 _col,
+        uint8[COL][ROW] storage _board
     ) internal view returns (Strat result) {
-        uint256 i;
-        uint256 counter;
+        uint8 i;
+        uint8 counter;
         unchecked {
             for (i = 1; i < 4; ++i) {
                 if (_row == 0 || _col == 0) break;
@@ -429,13 +431,13 @@ contract Connectoooors is IConnectoooors, ERC721, ERC721Holder, Ownable {
 
     /// @dev Checks diagonal placement of move descending from left to right
     function _checkDescending(
-        address _player,
-        uint256 _row,
-        uint256 _col,
-        address[COL][ROW] storage _board
+        uint8 _player,
+        uint8 _row,
+        uint8 _col,
+        uint8[COL][ROW] storage _board
     ) internal view returns (Strat result) {
-        uint256 i;
-        uint256 counter;
+        uint8 i;
+        uint8 counter;
         unchecked {
             for (i = 1; i < 4; ++i) {
                 if (_row + i == ROW || _col == 0) break;
@@ -468,5 +470,13 @@ contract Connectoooors is IConnectoooors, ERC721, ERC721Holder, Ownable {
             size := extcodesize(_addr)
         }
         return size > 0;
+    }
+
+    function _getPlayer(Game memory game, address _player) internal pure returns (uint8 player) {
+        if (_player == game.player1) {
+            player = PLAYER_1;
+        } else if (_player == game.player2) {
+            player = PLAYER_2;
+        }
     }
 }

@@ -82,10 +82,10 @@ contract Connectoooors is IConnectoooors, ERC721, ERC721Holder, Ownable {
         // Reverts if game does not exist
         if (_gameId == 0 || _gameId > currentId) revert InvalidGame();
         Game storage game = games[_gameId];
+        uint8 player = _getPlayer(game, msg.sender);
         // Reverts if game state is not Inactive
         if (State.INACTIVE != game.state) revert InvalidState();
         // Reverts if caller is not authorized to execute move
-        uint8 player = _getPlayer(game, msg.sender);
         if (player != game.turn) revert NotAuthorized();
         // Reverts if payment amount is incorrect
         if (msg.value != fee) revert InvalidPayment();
@@ -110,10 +110,10 @@ contract Connectoooors is IConnectoooors, ERC721, ERC721Holder, Ownable {
         if (_gameId == 0 || _gameId > currentId) revert InvalidGame();
         Game storage game = games[_gameId];
         uint8[COL][ROW] storage board = game.board;
+        uint8 player = _getPlayer(game, msg.sender);
         // Reverts if game state is not Active
         if (game.state != State.ACTIVE) revert InvalidState();
         // Reverts if caller is not authorized to execute move
-        uint8 player = _getPlayer(game, msg.sender);
         if (player != game.turn) revert NotAuthorized();
         // Reverts if cell is occupied or placement is not valid
         if (board[_row][_col] != 0 || (_row > 0 && board[_row - 1][_col] == 0))
@@ -472,10 +472,11 @@ contract Connectoooors is IConnectoooors, ERC721, ERC721Holder, Ownable {
         return size > 0;
     }
 
-    function _getPlayer(Game memory game, address _player) internal pure returns (uint8 player) {
-        if (_player == game.player1) {
+    /// @dev Gets player value based on caller
+    function _getPlayer(Game storage _game, address _player) internal view returns (uint8 player) {
+        if (_player == _game.player1) {
             player = PLAYER_1;
-        } else if (_player == game.player2) {
+        } else if (_player == _game.player2) {
             player = PLAYER_2;
         }
     }

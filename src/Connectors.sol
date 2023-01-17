@@ -40,7 +40,7 @@ contract Connectors is IConnectors, ERC721, ERC721Holder, Ownable {
     /// @notice Mapping of game ID to game info
     mapping(uint256 => Game) public games;
 
-    /// @dev Deploys new Metadata contract
+    /// @dev Deploys Metadata contract
     constructor() payable ERC721("Connectors", "C4") {
         metadata = address(new Metadata());
     }

@@ -57,10 +57,10 @@ Just a friendly on-chain game of Connect Four. Your move anon.
 | Deployment Cost                        | Deployment Size |        |        |        |         |
 | 4564238                                | 22813           |        |        |        |         |
 | Function Name                          | min             | avg    | median | max    | # calls |
-| begin                                  | 679             | 24028  | 29241  | 31141  | 19      |
-| challenge                              | 443             | 184763 | 203089 | 203089 | 22      |
-| getRow                                 | 14793           | 15723  | 14793  | 26793  | 101     |
-| move                                   | 662             | 15249  | 10371  | 80472  | 83      |
+| begin                                  | 679             | 30527  | 31141  | 31141  | 220     |
+| challenge                              | 443             | 167013 | 164689 | 203089 | 223     |
+| getRow                                 | 14793           | 16188  | 14793  | 26793  | 1508    |
+| move                                   | 662             | 21862  | 26208  | 80472  | 1289    |
 | setFee                                 | 2573            | 5024   | 5024   | 7475   | 2       |
-| tokenURI                               | 266991          | 295910 | 270209 | 570458 | 29      |
+| tokenURI                               | 269469          | 296085 | 272345 | 570458 | 29      |
 | withdraw                               | 9498            | 9498   | 9498   | 9498   | 1       |

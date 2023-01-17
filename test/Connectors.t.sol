@@ -293,7 +293,7 @@ contract ConnectorsTest is Test {
         // execute
         simulateGame(bob, eve);
         // assert
-        assertTr(gameId > MAX_SUPPLY);
+        assertTrue(gameId > MAX_SUPPLY);
         assertEq(connectors.ownerOf(gameId), address(connectors));
         assertEq(connectors.totalSupply(), MAX_SUPPLY);
     }
@@ -453,6 +453,17 @@ contract ConnectorsTest is Test {
     /// ===== HELPERS =====
     /// ===================
 
+    function simulateGame(address _player1, address _player2) public {
+        _challenge(_player1, _player2, FEE);
+        _begin(_player2, gameId, 0, 0, FEE);
+        _move(_player1, gameId, 1, 0);
+        _move(_player2, gameId, 0, 1);
+        _move(_player1, gameId, 2, 0);
+        _move(_player2, gameId, 0, 2);
+        _move(_player1, gameId, 3, 0);
+        _move(_player2, gameId, 0, 3);
+    }
+
     function printBoard() public view {
         uint256 x = 1;
         uint256 y = 1;
@@ -464,17 +475,6 @@ contract ConnectorsTest is Test {
             ++x;
             y = 1;
         }
-    }
-
-    function simulateGame(address _player1, address _player2) public view {
-        _challenge(_player1, _player2, FEE);
-        _begin(_player2, gameId, 0, 0, FEE);
-        _move(_player1, gameId, 1, 0);
-        _move(_player2, gameId, 0, 1);
-        _move(_player1, gameId, 2, 0);
-        _move(_player2, gameId, 0, 2);
-        _move(_player1, gameId, 3, 0);
-        _move(_player2, gameId, 0, 3);
     }
 
     function _challenge(address _sender, address _opponent, uint256 _fee) internal prank(_sender) {

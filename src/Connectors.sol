@@ -1,6 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.13;
 
+/// @title Connectors
+/// @author swa.eth
+
 /*********************************
  *           0       0           *
  * |░░░|░░░|░░░|░░░|░░░|░░░|░░░| *
@@ -18,8 +21,6 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "src/Metadata.sol";
 import "src/interfaces/IConnectors.sol";
 
-/// @title Connectors
-/// @author swa.eth
 /// @notice Just a friendly on-chain game of Connect Four
 contract Connectors is IConnectors, ERC721, ERC721Holder, Ownable {
     using Strings for uint8;
@@ -27,10 +28,10 @@ contract Connectors is IConnectors, ERC721, ERC721Holder, Ownable {
     using Strings for uint256;
     /// @dev Interface identifier for royalty standard
     bytes4 constant _INTERFACE_ID_ERC2981 = 0x2a55205a;
-    /// @notice Maximum supply of winning game boards
-    uint8 public constant MAX_SUPPLY = 100;
-    /// @notice Current supply of winning game boards
-    uint8 public totalSupply;
+    /// @notice Maximum supply of NFTs
+    uint16 public constant MAX_SUPPLY = 420;
+    /// @notice Current supply of NFTs
+    uint16 public totalSupply;
     /// @notice Address of Metadata contract
     address public immutable metadata;
     /// @notice Current game ID
@@ -45,12 +46,14 @@ contract Connectors is IConnectors, ERC721, ERC721Holder, Ownable {
         metadata = address(new Metadata());
     }
 
-    /// @notice Creates new game and mints new game board
+    /// @notice Creates new game and mints empty game board
     /// @dev Game can only become active once opponent calls begin
     /// @param _opponent Address of opponent
     function challenge(address _opponent) external payable {
         // Reverts if caller is also the opponent
         if (msg.sender == _opponent) revert InvalidMatchup();
+        // Reverts if max supply has been minted
+        if (totalSupply == MAX_SUPPLY) revert InsufficientSupply();
         // Reverts if payment amount is incorrect
         if (msg.value != fee) revert InvalidPayment();
 
@@ -62,6 +65,9 @@ contract Connectors is IConnectors, ERC721, ERC721Holder, Ownable {
 
         // Registers game on metadata contract
         IMetadata(metadata).register(currentId);
+
+        // Increments total supply
+        ++totalSupply;
 
         // Mints new board to this contract
         _safeMint(address(this), currentId);
@@ -148,22 +154,17 @@ contract Connectors is IConnectors, ERC721, ERC721Holder, Ownable {
             // Emits event for finishing game with a winner
             emit Result(_gameId, msg.sender, game.state, game.strat, board);
 
-            // Checks if number of winning games is less than maximum
-            if (totalSupply < MAX_SUPPLY) {
-                // Burns game board
-                _burn(_gameId);
-                // Increments total supply
-                ++totalSupply;
-                // Mints connector to caller
-                _safeMint(msg.sender, _gameId);
-            }
+            // Burns game board
+            _burn(_gameId);
+            // Mints connector to caller
+            _safeMint(msg.sender, _gameId);
         } else {
             // Updates player turn based on caller
             game.turn = (msg.sender == game.player1) ? PLAYER_2 : PLAYER_1;
 
             // Checks if number of moves has reached maximum moves
             if (moves == ROW * COL) {
-                // Updates state of game to draw
+                // Updates state of game to a draw
                 game.turn = 0;
                 game.state = State.DRAW;
                 // Emits event for finishing game with a draw
@@ -215,16 +216,13 @@ contract Connectors is IConnectors, ERC721, ERC721Holder, Ownable {
         uint8[COL][ROW] memory board = game.board;
         address player1 = game.player1;
         address player2 = game.player2;
-        string memory name;
+        string memory name = (game.state == State.SUCCESS)
+            ? string.concat("Connector #", _tokenId.toString())
+            : string.concat("Board #", _tokenId.toString());
         string memory description = "Just a friendly on-chain game of Connect Four. Your move anon.";
         string memory gameTraits = _generateGameTraits(game);
         string memory playerTraits = _generatePlayerTraits(_tokenId, player1, player2);
         string memory image = IMetadata(metadata).generateSVG(_tokenId, game.row, game.col, board);
-        if (game.state == State.SUCCESS && ownerOf(_tokenId) != address(this)) {
-            name = string.concat("Connector #", _tokenId.toString());
-        } else {
-            name = string.concat("Board #", _tokenId.toString());
-        }
 
         return
             string(

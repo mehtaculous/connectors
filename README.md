@@ -30,8 +30,8 @@ Just a friendly on-chain game of Connect Four. Your move anon.
 - There is a maximum number of **42** moves per game.
 - Every move dynamically updates the metadata and SVG image of the NFT on-chain and in real time.
 - Players can win by getting **4** in a row *horizontally*, *vertically* or *diagonally*.
-- When a player wins, they are transferred the winning game board (total supply is capped at **100**).
-- If the game ends in a draw (or if max supply has been reached), the NFT will remain with the smart contract.
+- When a player wins, they are transferred the winning game board (total supply is capped at **420**).
+- If the game ends in a draw, the NFT will remain with the smart contract.
 
 
 ### Mainnet
@@ -55,12 +55,12 @@ Just a friendly on-chain game of Connect Four. Your move anon.
 | Connectors.sol                         |                 |        |        |        |         |
 |----------------------------------------|-----------------|--------|--------|--------|---------|
 | Deployment Cost                        | Deployment Size |        |        |        |         |
-| 4487807                                | 22361           |        |        |        |         |
+| 4492815                                | 22386           |        |        |        |         |
 | Function Name                          | min             | avg    | median | max    | # calls |
-| begin                                  | 679             | 30526  | 31141  | 31141  | 220     |
-| challenge                              | 443             | 165254 | 163710 | 194110 | 223     |
-| getRow                                 | 14793           | 16188  | 14793  | 26793  | 1508    |
-| move                                   | 662             | 21862  | 26208  | 80472  | 1289    |
+| begin                                  | 679             | 30832  | 31141  | 31141  | 439     |
+| challenge                              | 443             | 155124 | 164454 | 199654 | 863     |
+| getRow                                 | 14793           | 16205  | 14793  | 26793  | 3041    |
+| move                                   | 662             | 21985  | 26208  | 76090  | 2603    |
 | setFee                                 | 2573            | 5024   | 5024   | 7475   | 2       |
-| tokenURI                               | 265935          | 295570 | 273793 | 567490 | 29      |
-| withdraw                               | 9498            | 9498   | 9498   | 9498   | 1       |
+| tokenURI                               | 265905          | 277895 | 269195 | 372345 | 25      |
+| withdraw                               | 7498            | 7498   | 7498   | 7498   | 1       |

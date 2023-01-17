@@ -29,12 +29,13 @@ contract ConnectorsTest is Test {
     uint8[COL][ROW] board;
 
     // Constants
+    uint256 constant BALANCE = 100 ether;
     uint256 constant FEE = .042 ether;
-    uint256 constant ETH_BALANCE = 100 ether;
-    uint256 constant MAX_SUPPLY = 100;
+    uint256 constant MAX_SUPPLY = 420;
 
     // Errors
     bytes NOT_OWNER_ERROR = bytes("Ownable: caller is not the owner");
+    bytes4 INSUFFICIENT_SUPPLY_ERROR = IConnectors.InsufficientSupply.selector;
     bytes4 INVALID_GAME_ERROR = IConnectors.InvalidGame.selector;
     bytes4 INVALID_MATCHUP_ERROR = IConnectors.InvalidMatchup.selector;
     bytes4 INVALID_MOVE_ERROR = IConnectors.InvalidMove.selector;
@@ -60,9 +61,9 @@ contract ConnectorsTest is Test {
         connectors = new Connectors();
         metadata = connectors.metadata();
 
-        vm.deal(bob, ETH_BALANCE);
-        vm.deal(eve, ETH_BALANCE);
-        vm.deal(address(this), ETH_BALANCE);
+        vm.deal(bob, BALANCE);
+        vm.deal(eve, BALANCE);
+        vm.deal(address(this), BALANCE);
 
         vm.label(address(connectors), "Connectors");
         vm.label(address(this), "ConnectorsTest");
@@ -83,10 +84,19 @@ contract ConnectorsTest is Test {
         assertEq(player2, eve);
         assertEq(turn, PLAYER_2);
         assertEq(uint8(state), uint8(State.INACTIVE));
-        assertEq(bob.balance, ETH_BALANCE - FEE);
+        assertEq(bob.balance, BALANCE - FEE);
         assertEq(address(connectors).balance, FEE);
         assertEq(connectors.ownerOf(gameId), address(connectors));
         connectors.tokenURI(gameId);
+    }
+
+    function testChallengeRevertInsufficientSupply() public {
+        // setup
+        for (uint256 i; i < MAX_SUPPLY; ++i) simulateGame(bob, eve);
+        // revert
+        vm.expectRevert(INSUFFICIENT_SUPPLY_ERROR);
+        // execute
+        _challenge(bob, eve, FEE);
     }
 
     function testChallengeRevertInvalidMatchup() public {
@@ -117,7 +127,7 @@ contract ConnectorsTest is Test {
         assertEq(moves, 1);
         assertEq(turn, PLAYER_1);
         assertEq(uint8(state), uint8(State.ACTIVE));
-        assertEq(eve.balance, ETH_BALANCE - FEE);
+        assertEq(eve.balance, BALANCE - FEE);
         assertEq(address(connectors).balance, FEE * 2);
         connectors.tokenURI(gameId);
     }
@@ -261,7 +271,7 @@ contract ConnectorsTest is Test {
         // execute
         _withdraw(address(this), payable(address(this)));
         // assert
-        assertEq(address(this).balance, ETH_BALANCE + (FEE * 2));
+        assertEq(address(this).balance, BALANCE + (FEE * 2));
     }
 
     /// =====================
@@ -280,22 +290,10 @@ contract ConnectorsTest is Test {
     function testTotalSupply() public {
         for (uint256 i; i < MAX_SUPPLY; ++i) {
             // setup
-            simulateGame(bob, eve);
+            _challenge(bob, eve, FEE);
             // assert
-            assertEq(connectors.ownerOf(gameId), eve);
             assertEq(connectors.totalSupply(), i + 1);
         }
-    }
-
-    function testTotalSupplyMax() public {
-        // setup
-        testTotalSupply();
-        // execute
-        simulateGame(bob, eve);
-        // assert
-        assertTrue(gameId > MAX_SUPPLY);
-        assertEq(connectors.ownerOf(gameId), address(connectors));
-        assertEq(connectors.totalSupply(), MAX_SUPPLY);
     }
 
     /// ===================
@@ -318,7 +316,6 @@ contract ConnectorsTest is Test {
         assertEq(uint256(strat), uint256(Strat.HORIZONTAL));
         assertEq(connectors.ownerOf(gameId), eve);
         assertEq(connectors.totalSupply(), 1);
-        connectors.tokenURI(gameId);
     }
 
     function testVertical() public {
@@ -338,7 +335,6 @@ contract ConnectorsTest is Test {
         assertEq(uint8(strat), uint8(Strat.VERTICAL));
         assertEq(connectors.ownerOf(gameId), eve);
         assertEq(connectors.totalSupply(), 1);
-        connectors.tokenURI(gameId);
     }
 
     function testAscending() public {
@@ -364,7 +360,6 @@ contract ConnectorsTest is Test {
         assertEq(uint8(strat), uint8(Strat.ASCENDING));
         assertEq(connectors.ownerOf(gameId), eve);
         assertEq(connectors.totalSupply(), 1);
-        connectors.tokenURI(gameId);
     }
 
     function testDescending() public {
@@ -445,8 +440,7 @@ contract ConnectorsTest is Test {
         assertEq(uint8(state), uint8(State.DRAW));
         assertEq(uint8(strat), uint8(Strat.NONE));
         assertEq(connectors.ownerOf(gameId), address(connectors));
-        assertEq(connectors.totalSupply(), 0);
-        connectors.tokenURI(gameId);
+        assertEq(connectors.totalSupply(), 1);
     }
 
     /// ===================

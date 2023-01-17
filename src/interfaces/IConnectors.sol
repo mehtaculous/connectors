@@ -34,6 +34,7 @@ struct Game {
 }
 
 interface IConnectors {
+    error InsufficientSupply();
     error InvalidGame();
     error InvalidMatchup();
     error InvalidMove();
@@ -62,7 +63,7 @@ interface IConnectors {
         uint8[COL][ROW] _board
     );
 
-    function MAX_SUPPLY() external view returns (uint8);
+    function MAX_SUPPLY() external view returns (uint16);
 
     function challenge(address _opponent) external payable;
 
@@ -80,7 +81,7 @@ interface IConnectors {
 
     function setFee(uint256 _fee) external payable;
 
-    function totalSupply() external view returns (uint8);
+    function totalSupply() external view returns (uint16);
 
     function withdraw(address payable _to) external payable;
 }

@@ -16,10 +16,11 @@ contract ConnectorsTest is Test {
     // State
     address metadata;
     uint256 gameId;
+    string checker1;
+    string checker2;
 
     // Game
     State state;
-    Strat strat;
     uint8 row;
     uint8 col;
     uint8 moves;
@@ -29,9 +30,12 @@ contract ConnectorsTest is Test {
     uint8[COL][ROW] board;
 
     // Constants
+    uint16 constant SUPPLY = 420;
     uint64 constant FEE = .042 ether;
     uint256 constant BALANCE = 100 ether;
-    uint256 constant MAX_SUPPLY = 420;
+    string constant BLUE = "Blue";
+    string constant RED = "Red";
+    string constant YELLOW = "Yellow";
 
     // Errors
     bytes NOT_OWNER_ERROR = bytes("Ownable: caller is not the owner");
@@ -78,6 +82,7 @@ contract ConnectorsTest is Test {
     function testChallengeSuccess() public {
         // execute
         _challenge(bob, eve, FEE);
+        connectors.tokenURI(gameId);
         // assert
         assertEq(gameId, 1);
         assertEq(player1, bob);
@@ -87,12 +92,11 @@ contract ConnectorsTest is Test {
         assertEq(bob.balance, BALANCE - FEE);
         assertEq(address(connectors).balance, FEE);
         assertEq(connectors.ownerOf(gameId), address(connectors));
-        connectors.tokenURI(gameId);
     }
 
     function testChallengeRevertInsufficientSupply() public {
         // setup
-        for (uint256 i; i < MAX_SUPPLY; ++i) simulateGame(bob, eve);
+        for (uint256 i; i < SUPPLY; ++i) simulateGame(bob, eve);
         // revert
         vm.expectRevert(INSUFFICIENT_SUPPLY_ERROR);
         // execute
@@ -122,6 +126,7 @@ contract ConnectorsTest is Test {
         _col = _boundCol(_col, 0, COL);
         // execute
         _begin(eve, gameId, row, _col, FEE);
+        connectors.tokenURI(gameId);
         // assert
         assertEq(board[row][col], PLAYER_2);
         assertEq(moves, 1);
@@ -129,7 +134,6 @@ contract ConnectorsTest is Test {
         assertEq(uint8(state), uint8(State.ACTIVE));
         assertEq(eve.balance, BALANCE - FEE);
         assertEq(address(connectors).balance, FEE * 2);
-        connectors.tokenURI(gameId);
     }
 
     function testBeginRevertInvalidGame(uint8 _col) public {
@@ -181,11 +185,11 @@ contract ConnectorsTest is Test {
         _begin(eve, gameId, row, col, FEE);
         // execute
         _move(bob, gameId, row, col + 1);
+        connectors.tokenURI(gameId);
         // assert
         assertEq(board[row][col], PLAYER_1);
         assertEq(turn, PLAYER_2);
         assertEq(moves, 2);
-        connectors.tokenURI(gameId);
     }
 
     function testMoveRevertInvalidGame(uint8 _col) public {
@@ -245,6 +249,18 @@ contract ConnectorsTest is Test {
         _move(bob, gameId, row, col);
     }
 
+    /// ========================
+    /// ===== TOTAL SUPPLY =====
+    /// ========================
+    function testTotalSupply() public {
+        for (uint256 i; i < SUPPLY; ++i) {
+            // setup
+            _challenge(bob, eve, FEE);
+            // assert
+            assertEq(connectors.totalSupply(), i + 1);
+        }
+    }
+
     /// ===================
     /// ===== SET FEE =====
     /// ===================
@@ -285,15 +301,39 @@ contract ConnectorsTest is Test {
     }
 
     /// ========================
-    /// ===== TOTAL SUPPLY =====
+    /// ===== GET CHECKERS =====
     /// ========================
-    function testTotalSupply() public {
-        for (uint256 i; i < MAX_SUPPLY; ++i) {
-            // setup
-            _challenge(bob, eve, FEE);
-            // assert
-            assertEq(connectors.totalSupply(), i + 1);
-        }
+    function testGetCheckers() public {
+        // 1
+        _challenge(bob, eve, FEE);
+        (checker1, checker2) = IMetadata(metadata).getCheckers(gameId);
+        assertEq(checker1, BLUE);
+        assertEq(checker2, RED);
+        // 2
+        _challenge(bob, eve, FEE);
+        (checker1, checker2) = IMetadata(metadata).getCheckers(gameId);
+        assertEq(checker1, RED);
+        assertEq(checker2, YELLOW);
+        // 3
+        _challenge(bob, eve, FEE);
+        (checker1, checker2) = IMetadata(metadata).getCheckers(gameId);
+        assertEq(checker1, YELLOW);
+        assertEq(checker2, BLUE);
+        // 4
+        _challenge(bob, eve, FEE);
+        (checker1, checker2) = IMetadata(metadata).getCheckers(gameId);
+        assertEq(checker1, RED);
+        assertEq(checker2, BLUE);
+        // 5
+        _challenge(bob, eve, FEE);
+        (checker1, checker2) = IMetadata(metadata).getCheckers(gameId);
+        assertEq(checker1, YELLOW);
+        assertEq(checker2, RED);
+        // 6
+        _challenge(bob, eve, FEE);
+        (checker1, checker2) = IMetadata(metadata).getCheckers(gameId);
+        assertEq(checker1, BLUE);
+        assertEq(checker2, YELLOW);
     }
 
     /// ===================
@@ -309,11 +349,11 @@ contract ConnectorsTest is Test {
         _move(eve, gameId, 0, 2);
         _move(bob, gameId, 3, 0);
         _move(eve, gameId, 0, 3);
+        connectors.tokenURI(gameId);
         // assert
         assertEq(turn, PLAYER_2);
         assertEq(moves, 7);
         assertEq(uint256(state), uint256(State.SUCCESS));
-        assertEq(uint256(strat), uint256(Strat.HORIZONTAL));
         assertEq(connectors.ownerOf(gameId), eve);
         assertEq(connectors.totalSupply(), 1);
     }
@@ -328,11 +368,11 @@ contract ConnectorsTest is Test {
         _move(eve, gameId, 2, 0);
         _move(bob, gameId, 0, 3);
         _move(eve, gameId, 3, 0);
+        connectors.tokenURI(gameId);
         // assert
         assertEq(turn, PLAYER_2);
         assertEq(moves, 7);
         assertEq(uint8(state), uint8(State.SUCCESS));
-        assertEq(uint8(strat), uint8(Strat.VERTICAL));
         assertEq(connectors.ownerOf(gameId), eve);
         assertEq(connectors.totalSupply(), 1);
     }
@@ -353,11 +393,11 @@ contract ConnectorsTest is Test {
         _move(eve, gameId, 3, 3);
         _move(bob, gameId, 0, 5);
         _move(eve, gameId, 2, 2);
+        connectors.tokenURI(gameId);
         // assert
         assertEq(turn, PLAYER_2);
         assertEq(moves, 13);
         assertEq(uint8(state), uint8(State.SUCCESS));
-        assertEq(uint8(strat), uint8(Strat.ASCENDING));
         assertEq(connectors.ownerOf(gameId), eve);
         assertEq(connectors.totalSupply(), 1);
     }
@@ -376,14 +416,13 @@ contract ConnectorsTest is Test {
         _move(eve, gameId, 1, 2);
         _move(bob, gameId, 2, 2);
         _move(eve, gameId, 0, 3);
+        connectors.tokenURI(gameId);
         // assert
         assertEq(turn, PLAYER_2);
         assertEq(moves, 11);
         assertEq(uint8(state), uint8(State.SUCCESS));
-        assertEq(uint8(strat), uint8(Strat.DESCENDING));
         assertEq(connectors.ownerOf(gameId), eve);
         assertEq(connectors.totalSupply(), 1);
-        connectors.tokenURI(gameId);
     }
 
     /// ================
@@ -434,11 +473,11 @@ contract ConnectorsTest is Test {
         _move(bob, gameId, 3, 6);
         _move(eve, gameId, 4, 6);
         _move(bob, gameId, 5, 6);
+        connectors.tokenURI(gameId);
         // assert
         assertEq(turn, 0);
         assertEq(moves, ROW * COL);
         assertEq(uint8(state), uint8(State.DRAW));
-        assertEq(uint8(strat), uint8(Strat.NONE));
         assertEq(connectors.ownerOf(gameId), address(connectors));
         assertEq(connectors.totalSupply(), 1);
     }
@@ -486,7 +525,6 @@ contract ConnectorsTest is Test {
     ) internal prank(_sender) {
         connectors.begin{value: _fee}(_gameId, _row, _col);
         _setState(gameId);
-        _setMove(_row, _col);
         if (row < ROW) _setBoard(gameId, row);
     }
 
@@ -498,7 +536,6 @@ contract ConnectorsTest is Test {
     ) internal prank(_sender) {
         connectors.move(_gameId, _row, _col);
         _setState(gameId);
-        _setMove(_row, _col);
         if (row < ROW) _setBoard(gameId, row);
     }
 
@@ -515,12 +552,7 @@ contract ConnectorsTest is Test {
     }
 
     function _setState(uint256 _gameId) internal {
-        (state, strat, , , moves, turn, player1, player2) = connectors.games(_gameId);
-    }
-
-    function _setMove(uint8 _row, uint8 _col) internal {
-        row = _row;
-        col = _col;
+        (state, row, col, moves, turn, player1, player2) = connectors.games(_gameId);
     }
 
     function _setBoard(uint256 _gameId, uint8 _row) internal {

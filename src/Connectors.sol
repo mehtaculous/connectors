@@ -100,7 +100,7 @@ contract Connectors is IConnectors, ERC721, ERC721Holder, Ownable {
     /// @param _gameId ID of the game
     /// @param _row Value of row placement on board (0-5)
     /// @param _col Value of column placement on board (0-6)
-    function move(uint256 _gameId, uint8 _row, uint8 _col) public returns (Strat result) {
+    function move(uint256 _gameId, uint8 _row, uint8 _col) public returns (bool result) {
         // Reverts if game does not exist
         if (_gameId == 0 || _gameId > totalSupply) revert InvalidGame();
         Game storage game = games[_gameId];
@@ -129,9 +129,9 @@ contract Connectors is IConnectors, ERC721, ERC721Holder, Ownable {
         // Only checks board for win if minimum number of moves have been made
         if (moves > 6) result = _checkBoard(playerId, _row, _col, board);
 
-        // Checks if result is any of the winning strategies
-        if (result != Strat.NONE) {
-            _success(_gameId, game, result);
+        // Checks if game has been won
+        if (result) {
+            _success(_gameId, game);
         } else {
             // Updates player turn based on caller
             game.turn = (msg.sender == game.player1) ? PLAYER_2 : PLAYER_1;
@@ -214,13 +214,12 @@ contract Connectors is IConnectors, ERC721, ERC721Holder, Ownable {
     }
 
     /// @dev Executes when game finishes with a winner
-    function _success(uint256 _gameId, Game storage _game, Strat _result) internal {
+    function _success(uint256 _gameId, Game storage _game) internal {
         // Updates game state to success
-        _game.strat = _result;
         _game.state = State.SUCCESS;
 
         // Emits event for finishing game with a winner
-        emit Result(_gameId, msg.sender, _game.state, _game.strat, _game.board);
+        emit Result(_gameId, msg.sender, _game.state, _game.board);
 
         // Burns game board
         _burn(_gameId);
@@ -236,7 +235,7 @@ contract Connectors is IConnectors, ERC721, ERC721Holder, Ownable {
         _game.state = State.DRAW;
 
         // Emits event for finishing game with a draw
-        emit Result(_gameId, address(0), _game.state, _game.strat, _game.board);
+        emit Result(_gameId, address(0), _game.state, _game.board);
     }
 
     /// @dev Checks if move wins game in all four directions
@@ -245,11 +244,11 @@ contract Connectors is IConnectors, ERC721, ERC721Holder, Ownable {
         uint8 _row,
         uint8 _col,
         uint8[COL][ROW] storage _board
-    ) internal view returns (Strat result) {
+    ) internal view returns (bool result) {
         result = _checkHorizontal(_playerId, _row, _col, _board);
-        if (result == Strat.NONE) result = _checkVertical(_playerId, _row, _col, _board);
-        if (result == Strat.NONE) result = _checkAscending(_playerId, _row, _col, _board);
-        if (result == Strat.NONE) result = _checkDescending(_playerId, _row, _col, _board);
+        if (!result) result = _checkVertical(_playerId, _row, _col, _board);
+        if (!result) result = _checkAscending(_playerId, _row, _col, _board);
+        if (!result) result = _checkDescending(_playerId, _row, _col, _board);
     }
 
     /// @dev Checks horizontal placement of move on board
@@ -258,7 +257,7 @@ contract Connectors is IConnectors, ERC721, ERC721Holder, Ownable {
         uint8 _row,
         uint8 _col,
         uint8[COL][ROW] storage _board
-    ) internal view returns (Strat result) {
+    ) internal view returns (bool result) {
         uint8 i;
         uint8 counter;
         unchecked {
@@ -282,7 +281,7 @@ contract Connectors is IConnectors, ERC721, ERC721Holder, Ownable {
             }
         }
 
-        if (counter > 2) result = Strat.HORIZONTAL;
+        if (counter > 2) result = true;
     }
 
     /// @dev Checks vertical placement of move on board
@@ -291,7 +290,7 @@ contract Connectors is IConnectors, ERC721, ERC721Holder, Ownable {
         uint8 _row,
         uint8 _col,
         uint8[COL][ROW] storage _board
-    ) internal view returns (Strat result) {
+    ) internal view returns (bool result) {
         uint8 i;
         uint8 counter;
         unchecked {
@@ -315,7 +314,7 @@ contract Connectors is IConnectors, ERC721, ERC721Holder, Ownable {
             }
         }
 
-        if (counter > 2) result = Strat.VERTICAL;
+        if (counter > 2) result = true;
     }
 
     /// @dev Checks diagonal placement of move ascending from left to right
@@ -324,7 +323,7 @@ contract Connectors is IConnectors, ERC721, ERC721Holder, Ownable {
         uint8 _row,
         uint8 _col,
         uint8[COL][ROW] storage _board
-    ) internal view returns (Strat result) {
+    ) internal view returns (bool result) {
         uint8 i;
         uint8 counter;
         unchecked {
@@ -348,7 +347,7 @@ contract Connectors is IConnectors, ERC721, ERC721Holder, Ownable {
             }
         }
 
-        if (counter > 2) result = Strat.ASCENDING;
+        if (counter > 2) result = true;
     }
 
     /// @dev Checks diagonal placement of move descending from left to right
@@ -357,7 +356,7 @@ contract Connectors is IConnectors, ERC721, ERC721Holder, Ownable {
         uint8 _row,
         uint8 _col,
         uint8[COL][ROW] storage _board
-    ) internal view returns (Strat result) {
+    ) internal view returns (bool result) {
         uint8 i;
         uint8 counter;
         unchecked {
@@ -382,7 +381,7 @@ contract Connectors is IConnectors, ERC721, ERC721Holder, Ownable {
             }
         }
 
-        if (counter > 2) result = Strat.DESCENDING;
+        if (counter > 2) result = true;
     }
 
     /// @dev Generates JSON formatted data of game traits

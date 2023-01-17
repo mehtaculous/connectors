@@ -13,17 +13,8 @@ enum State {
     DRAW
 }
 
-enum Strat {
-    NONE,
-    VERTICAL,
-    HORIZONTAL,
-    ASCENDING,
-    DESCENDING
-}
-
 struct Game {
     State state;
-    Strat strat;
     uint8 row;
     uint8 col;
     uint8 moves;
@@ -59,7 +50,6 @@ interface IConnectors {
         uint256 indexed _gameId,
         address indexed _winner,
         State indexed _state,
-        Strat _strat,
         uint8[COL][ROW] _board
     );
 
@@ -75,7 +65,7 @@ interface IConnectors {
 
     function metadata() external view returns (address);
 
-    function move(uint256 _gameId, uint8 _row, uint8 _col) external returns (Strat);
+    function move(uint256 _gameId, uint8 _row, uint8 _col) external returns (bool);
 
     function setFee(uint64 _fee) external payable;
 

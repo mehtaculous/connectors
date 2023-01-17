@@ -126,17 +126,32 @@ contract Metadata is IMetadata {
         uint256 _gameId
     ) internal pure returns (string memory base, string memory player1, string memory player2) {
         if (_gameId % 3 == 0) {
-            base = YELLOW;
-            player1 = BLUE;
-            player2 = RED;
-        } else if (_gameId % 3 == 1) {
-            base = BLUE;
-            player1 = RED;
-            player2 = YELLOW;
-        } else {
             base = RED;
-            player1 = YELLOW;
-            player2 = BLUE;
+            if (_gameId % 2 == 0) {
+                player1 = BLUE;
+                player2 = YELLOW;
+            } else {
+                player1 = YELLOW;
+                player2 = BLUE;
+            }
+        } else if (_gameId % 3 == 1) {
+            base = YELLOW;
+            if (_gameId % 2 == 0) {
+                player1 = RED;
+                player2 = BLUE;
+            } else {
+                player1 = BLUE;
+                player2 = RED;
+            }
+        } else if (_gameId % 3 == 2) {
+            base = BLUE;
+            if (_gameId % 2 == 0) {
+                player1 = RED;
+                player2 = YELLOW;
+            } else {
+                player1 = YELLOW;
+                player2 = RED;
+            }
         }
     }
 

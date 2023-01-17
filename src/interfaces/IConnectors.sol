@@ -67,11 +67,9 @@ interface IConnectors {
 
     function challenge(address _opponent) external payable;
 
-    function currentId() external view returns (uint256);
-
     function begin(uint256 _gameId, uint8 _row, uint8 _col) external payable;
 
-    function fee() external view returns (uint256);
+    function fee() external view returns (uint64);
 
     function getRow(uint256 _gameId, uint8 _row) external view returns (uint8[COL] memory);
 
@@ -79,7 +77,7 @@ interface IConnectors {
 
     function move(uint256 _gameId, uint8 _row, uint8 _col) external returns (Strat);
 
-    function setFee(uint256 _fee) external payable;
+    function setFee(uint64 _fee) external payable;
 
     function totalSupply() external view returns (uint16);
 

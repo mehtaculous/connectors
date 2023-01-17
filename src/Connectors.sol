@@ -30,14 +30,12 @@ contract Connectors is IConnectors, ERC721, ERC721Holder, Ownable {
     bytes4 constant _INTERFACE_ID_ERC2981 = 0x2a55205a;
     /// @notice Maximum supply of NFTs
     uint16 public constant MAX_SUPPLY = 420;
-    /// @notice Current supply of NFTs
-    uint16 public totalSupply;
     /// @notice Address of Metadata contract
     address public immutable metadata;
-    /// @notice Current game ID
-    uint256 public currentId;
+    /// @notice Current supply of NFTs
+    uint16 public totalSupply;
     /// @notice Ether amount required to play (per player)
-    uint256 public fee = 0.0420 ether;
+    uint64 public fee = 0.0420 ether;
     /// @notice Mapping of game ID to game info
     mapping(uint256 => Game) public games;
 
@@ -58,22 +56,19 @@ contract Connectors is IConnectors, ERC721, ERC721Holder, Ownable {
         if (msg.value != fee) revert InvalidPayment();
 
         // Initializes game info
-        Game storage game = games[++currentId];
+        Game storage game = games[++totalSupply];
         game.player1 = msg.sender;
         game.player2 = _opponent;
         game.turn = PLAYER_2;
 
         // Registers game on metadata contract
-        IMetadata(metadata).register(currentId);
-
-        // Increments total supply
-        ++totalSupply;
+        IMetadata(metadata).register(totalSupply);
 
         // Mints new board to this contract
-        _safeMint(address(this), currentId);
+        _safeMint(address(this), totalSupply);
 
         // Emits event for challenging opponent
-        emit Challenge(currentId, msg.sender, _opponent);
+        emit Challenge(totalSupply, msg.sender, _opponent);
     }
 
     /// @notice Activates new game and executes first move on board
@@ -83,7 +78,7 @@ contract Connectors is IConnectors, ERC721, ERC721Holder, Ownable {
     /// @param _col Value of column placement on board (0-6)
     function begin(uint256 _gameId, uint8 _row, uint8 _col) external payable {
         // Reverts if game does not exist
-        if (_gameId == 0 || _gameId > currentId) revert InvalidGame();
+        if (_gameId == 0 || _gameId > totalSupply) revert InvalidGame();
         Game storage game = games[_gameId];
         uint8 playerId = _getPlayerId(game, msg.sender);
         // Reverts if game state is not Inactive
@@ -110,7 +105,7 @@ contract Connectors is IConnectors, ERC721, ERC721Holder, Ownable {
     /// @param _col Value of column placement on board (0-6)
     function move(uint256 _gameId, uint8 _row, uint8 _col) public returns (Strat result) {
         // Reverts if game does not exist
-        if (_gameId == 0 || _gameId > currentId) revert InvalidGame();
+        if (_gameId == 0 || _gameId > totalSupply) revert InvalidGame();
         Game storage game = games[_gameId];
         uint8[COL][ROW] storage board = game.board;
         uint8 playerId = _getPlayerId(game, msg.sender);
@@ -134,48 +129,24 @@ contract Connectors is IConnectors, ERC721, ERC721Holder, Ownable {
         // Emits event for creating new move on board
         emit Move(_gameId, msg.sender, moves, _row, _col);
 
-        // Checks if minimum number of moves for a possible win have been made
-        if (moves > 6) {
-            // Checks horizontal placement of move
-            result = _checkHorizontal(playerId, _row, _col, board);
-            // Checks vertical placement of move
-            if (result == Strat.NONE) result = _checkVertical(playerId, _row, _col, board);
-            // Checks diagonal placement of move ascending from left to right
-            if (result == Strat.NONE) result = _checkAscending(playerId, _row, _col, board);
-            // Checks diagonal placement of move descending from left to right
-            if (result == Strat.NONE) result = _checkDescending(playerId, _row, _col, board);
-        }
+        // Only checks board for win if minimum number of moves have been made
+        if (moves > 6) result = _checkBoard(playerId, _row, _col, board);
 
         // Checks if result is any of the winning strategies
         if (result != Strat.NONE) {
-            // Updates state of game to successful
-            game.strat = result;
-            game.state = State.SUCCESS;
-            // Emits event for finishing game with a winner
-            emit Result(_gameId, msg.sender, game.state, game.strat, board);
-
-            // Burns game board
-            _burn(_gameId);
-            // Mints connector to caller
-            _safeMint(msg.sender, _gameId);
+            _success(_gameId, game, result);
         } else {
             // Updates player turn based on caller
             game.turn = (msg.sender == game.player1) ? PLAYER_2 : PLAYER_1;
 
             // Checks if number of moves has reached maximum moves
-            if (moves == ROW * COL) {
-                // Updates state of game to a draw
-                game.turn = 0;
-                game.state = State.DRAW;
-                // Emits event for finishing game with a draw
-                emit Result(_gameId, address(0), game.state, game.strat, board);
-            }
+            if (moves == ROW * COL) _draw(_gameId, game);
         }
     }
 
     /// @notice Sets fee amount required to play game
     /// @param _fee Amount in ether
-    function setFee(uint256 _fee) external payable onlyOwner {
+    function setFee(uint64 _fee) external payable onlyOwner {
         fee = _fee;
     }
 
@@ -243,6 +214,40 @@ contract Connectors is IConnectors, ERC721, ERC721Holder, Ownable {
                     "]}"
                 )
             );
+    }
+
+    /// @dev Executes when game finishes with a winner
+    function _success(uint256 _gameId, Game storage _game, Strat _result) internal {
+        // Updates game state to success
+        _game.strat = _result;
+        _game.state = State.SUCCESS;
+
+        // Emits event for finishing game with a winner
+        emit Result(_gameId, msg.sender, _game.state, _game.strat, _game.board);
+
+        // Burns game board
+        _burn(_gameId);
+
+        // Mints connector to caller
+        _safeMint(msg.sender, _gameId);
+    }
+
+    /// @dev Executes when game finishes with no winner
+    function _draw(uint256 _gameId, Game storage _game) internal {
+        // Updates game state to draw
+        _game.turn = 0;
+        _game.state = State.DRAW;
+
+        // Emits event for finishing game with a draw
+        emit Result(_gameId, address(0), _game.state, _game.strat, _game.board);
+    }
+
+    /// @dev Checks if move wins game in all four directions
+    function _checkBoard(uint8 _playerId, uint8 _row, uint8 _col, uint8[COL][ROW] storage _board) internal view returns (Strat result) {
+        result = _checkHorizontal(_playerId, _row, _col, _board);
+        if (result == Strat.NONE) result = _checkVertical(_playerId, _row, _col, _board);
+        if (result == Strat.NONE) result = _checkAscending(_playerId, _row, _col, _board);
+        if (result == Strat.NONE) result = _checkDescending(_playerId, _row, _col, _board);
     }
 
     /// @dev Checks horizontal placement of move on board
@@ -426,7 +431,7 @@ contract Connectors is IConnectors, ERC721, ERC721Holder, Ownable {
     ) internal view returns (string memory) {
         string memory player1 = uint160(_player1).toHexString(20);
         string memory player2 = uint160(_player2).toHexString(20);
-        (string memory checker1, string memory checker2) = IMetadata(metadata).getChecker(_gameId);
+        (string memory checker1, string memory checker2) = IMetadata(metadata).getCheckers(_gameId);
 
         return
             string(

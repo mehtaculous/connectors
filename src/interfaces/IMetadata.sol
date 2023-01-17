@@ -23,7 +23,7 @@ interface IMetadata {
         uint8[COL][ROW] memory _board
     ) external view returns (string memory);
 
-    function getChecker(uint256 _gameId) external view returns (string memory, string memory);
+    function getCheckers(uint256 _gameId) external view returns (string memory, string memory);
 
     function getStatus(State _state) external view returns (string memory);
 

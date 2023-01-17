@@ -29,8 +29,8 @@ contract ConnectorsTest is Test {
     uint8[COL][ROW] board;
 
     // Constants
+    uint64 constant FEE = .042 ether;
     uint256 constant BALANCE = 100 ether;
-    uint256 constant FEE = .042 ether;
     uint256 constant MAX_SUPPLY = 420;
 
     // Errors
@@ -248,14 +248,14 @@ contract ConnectorsTest is Test {
     /// ===================
     /// ===== SET FEE =====
     /// ===================
-    function testSetFeeSuccess(uint256 _fee) public {
+    function testSetFeeSuccess(uint64 _fee) public {
         // execute
         _setFee(address(this), _fee);
         // assert
         assertEq(_fee, connectors.fee());
     }
 
-    function testSetFeeRevertNotOwner(uint256 _fee) public {
+    function testSetFeeRevertNotOwner(uint64 _fee) public {
         // revert
         vm.expectRevert(NOT_OWNER_ERROR);
         // execute
@@ -502,7 +502,7 @@ contract ConnectorsTest is Test {
         if (row < ROW) _setBoard(gameId, row);
     }
 
-    function _setFee(address _sender, uint256 _fee) internal prank(_sender) {
+    function _setFee(address _sender, uint64 _fee) internal prank(_sender) {
         connectors.setFee(_fee);
     }
 
@@ -511,7 +511,7 @@ contract ConnectorsTest is Test {
     }
 
     function _setGame() internal {
-        gameId = connectors.currentId();
+        gameId = connectors.totalSupply();
     }
 
     function _setState(uint256 _gameId) internal {

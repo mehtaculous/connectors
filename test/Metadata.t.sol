@@ -105,7 +105,7 @@ contract MetadataTest is Test {
 
     function _challenge(address _sender, address _opponent) internal prank(_sender) {
         connectors.challenge(_opponent);
-        gameId = connectors.currentId();
+        gameId = connectors.totalSupply();
     }
 
     function _register(address _sender, uint256 _gameId) internal prank(_sender) {

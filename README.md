@@ -17,7 +17,7 @@ Just a friendly on-chain game of Connect Four. Your move anon.
 
 > Activates a new game and executes the first move on the game board
 
-- Opponents must first begin the game before any moves can be made.
+- The opponent must first begin the game before any moves can be made.
 - Each board consists of **6** Rows and **7** Columns that are *zero-indexed*.
 - The `row` values range from **0 - 5**.
 - The `col` values range from **0 - 6**.
@@ -30,11 +30,12 @@ Just a friendly on-chain game of Connect Four. Your move anon.
 - There is a maximum number of **42** moves per game.
 - Every move dynamically updates the metadata and SVG image of the NFT on-chain and in real time.
 - Players can win by getting **4** in a row *horizontally*, *vertically* or *diagonally*.
-- When a player wins, they are transferred the winning game board (total supply is capped at **420**).
-- If the game ends in a draw, the NFT will remain with the smart contract.
+- When a player wins, they are transferred the winning game board.
+- If the game ends in a draw, the NFT remains with the smart contract.
+- Total supply is capped at **420**
 
 
-### Mainnet
+### Mainnet Contracts
 
 | Name                | Address                                                                                                                      |
 | ---------------     | ---------------------------------------------------------------------------------------------------------------------------- |
@@ -42,7 +43,7 @@ Just a friendly on-chain game of Connect Four. Your move anon.
 | `Metadata.sol`      | [](https://etherscan.io/address/) |
 
 
-### Goerli
+### Goerli Contracts
 
 | Name                | Address                                                                                                                      |
 | ---------------     | ---------------------------------------------------------------------------------------------------------------------------- |
@@ -55,12 +56,12 @@ Just a friendly on-chain game of Connect Four. Your move anon.
 | Connectors.sol                         |                 |        |        |        |         |
 |----------------------------------------|-----------------|--------|--------|--------|---------|
 | Deployment Cost                        | Deployment Size |        |        |        |         |
-| 4492815                                | 22386           |        |        |        |         |
+| 4508204                                | 22590           |        |        |        |         |
 | Function Name                          | min             | avg    | median | max    | # calls |
-| begin                                  | 679             | 30832  | 31141  | 31141  | 439     |
-| challenge                              | 443             | 155124 | 164454 | 199654 | 863     |
+| begin                                  | 636             | 30847  | 31156  | 31156  | 439     |
+| challenge                              | 398             | 154364 | 164305 | 175605 | 863     |
 | getRow                                 | 14793           | 16205  | 14793  | 26793  | 3041    |
-| move                                   | 662             | 21985  | 26208  | 76090  | 2603    |
-| setFee                                 | 2573            | 5024   | 5024   | 7475   | 2       |
-| tokenURI                               | 265905          | 277895 | 269195 | 372345 | 25      |
-| withdraw                               | 7498            | 7498   | 7498   | 7498   | 1       |
+| move                                   | 707             | 22043  | 26253  | 76209  | 2603    |
+| setFee                                 | 2619            | 4108   | 4108   | 5598   | 2       |
+| tokenURI                               | 266089          | 277246 | 269379 | 372529 | 25      |
+| withdraw                               | 7520            | 7520   | 7520   | 7520   | 1       |

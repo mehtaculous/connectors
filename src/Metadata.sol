@@ -46,7 +46,7 @@ contract Metadata is IMetadata, Ownable {
         svg = string.concat(board, "</svg>");
     }
 
-    function getChecker(
+    function getCheckers(
         uint256 _gameId
     ) external view returns (string memory player1, string memory player2) {
         Render memory render = renders[_gameId];

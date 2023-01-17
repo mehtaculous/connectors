@@ -12,6 +12,7 @@ contract DeployScript is Script {
     function run() public {
         vm.startBroadcast();
         deploy();
+        challenge();
         vm.stopBroadcast();
     }
 

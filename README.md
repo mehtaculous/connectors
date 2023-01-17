@@ -12,7 +12,7 @@ Just a friendly on-chain game of Connect Four. Your move anon.
 - Challenge anyone to a game of Connect Four.
 - Both players must pay a fee of **.0420** eth to play.
 - Each new game mints an ERC-721 token of an empty game board.
-- Follow along with the game on any [marketplace](https://testnets.opensea.io/collection/connectors-v3) that supports on-chain art.
+- Follow along with the game on any [marketplace](https://testnets.opensea.io/collection/connectors-v4) that supports on-chain art.
 
 ### `Begin`
 
@@ -48,8 +48,8 @@ Just a friendly on-chain game of Connect Four. Your move anon.
 
 | Name                | Address                                                                                                                      |
 | ---------------     | ---------------------------------------------------------------------------------------------------------------------------- |
-| `Connectors.sol`    | [0x62455e0E1Cf34a88b64d15dAd96137e73388C266](https://goerli.etherscan.io/address/0x62455e0E1Cf34a88b64d15dAd96137e73388C266) |
-| `Metadata.sol`      | [0x617c35f2ecd44C7Ac12F745dC9081C8a379102fA](https://goerli.etherscan.io/address/0x617c35f2ecd44C7Ac12F745dC9081C8a379102fA) |
+| `Connectors.sol`    | [0x51f89AA01259C08D7334dFF461C26F856b3a2858](https://goerli.etherscan.io/address/0x51f89AA01259C08D7334dFF461C26F856b3a2858) |
+| `Metadata.sol`      | [0xcC37eb7A9aC72615eCcf5120f2cE6d7aBB38ab5c](https://goerli.etherscan.io/address/0xcC37eb7A9aC72615eCcf5120f2cE6d7aBB38ab5c) |
 
 
 ### Gas Report

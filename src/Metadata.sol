@@ -1,57 +1,47 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.13;
 
-import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 import "src/interfaces/IMetadata.sol";
 
-contract Metadata is IMetadata, Ownable {
+contract Metadata is IMetadata {
     using Strings for uint256;
     string public constant BLUE = "#29335c";
     string public constant RED = "#DB2B39";
     string public constant YELLOW = "#F3A712";
-    mapping(uint256 => Render) public renders;
 
     constructor() payable {}
-
-    function register(uint256 _gameId) external onlyOwner {
-        string[3] memory palette = [YELLOW, BLUE, RED];
-        Render storage render = renders[_gameId];
-        render.base = palette[(_gameId - 1) % 3];
-        render.player1 = palette[(_gameId) % 3];
-        render.player2 = palette[(_gameId + 1) % 3];
-    }
 
     function generateSVG(
         uint256 _gameId,
         uint8 _row,
         uint8 _col,
         uint8[COL][ROW] memory _board
-    ) external view returns (string memory svg) {
-        Render memory render = renders[_gameId];
+    ) external pure returns (string memory svg) {
         string memory board = _generateBoard();
-        for (uint256 y; y < COL; ++y) {
+        (string memory base, string memory player1, string memory player2) = _getPalette(_gameId);
+        for (uint8 y; y < COL; ++y) {
             board = string.concat(board, _generateGrid(y));
-            for (uint256 x; x < ROW; ++x) {
+            for (uint8 x; x < ROW; ++x) {
                 string memory cell;
                 if (_board[x][y] == PLAYER_1) {
-                    cell = _generateCell(x, y, _row, _col, render.player1);
+                    cell = _generateCell(x, y, _row, _col, player1);
                 } else if (_board[x][y] == PLAYER_2) {
-                    cell = _generateCell(x, y, _row, _col, render.player2);
+                    cell = _generateCell(x, y, _row, _col, player2);
                 }
                 board = string.concat(board, cell);
             }
-            board = string.concat(board, _generateBase(render.base));
+            board = string.concat(board, _generateBase(base));
         }
         svg = string.concat(board, "</svg>");
     }
 
     function getCheckers(
         uint256 _gameId
-    ) external view returns (string memory player1, string memory player2) {
-        Render memory render = renders[_gameId];
-        player1 = _getColor(render.player1);
-        player2 = _getColor(render.player2);
+    ) external pure returns (string memory checker1, string memory checker2) {
+        (, string memory player1, string memory player2) = _getPalette(_gameId);
+        checker1 = _getColor(player1);
+        checker2 = _getColor(player2);
     }
 
     function getStatus(State _state) external pure returns (string memory status) {
@@ -132,13 +122,31 @@ contract Metadata is IMetadata, Ownable {
         return string(abi.encodePacked(base[0], base[1], base[2]));
     }
 
+    function _getPalette(
+        uint256 _gameId
+    ) internal pure returns (string memory base, string memory player1, string memory player2) {
+        if (_gameId % 3 == 0) {
+            base = YELLOW;
+            player1 = BLUE;
+            player2 = RED;
+        } else if (_gameId % 3 == 1) {
+            base = BLUE;
+            player1 = RED;
+            player2 = YELLOW;
+        } else {
+            base = RED;
+            player1 = YELLOW;
+            player2 = BLUE;
+        }
+    }
+
     function _getColor(string memory _player) internal pure returns (string memory checker) {
-        if (_hash(_player) == _hash(BLUE)) checker = "Blue";
-        else if (_hash(_player) == _hash(RED)) checker = "Red";
+        if (_hashStr(_player) == _hashStr(BLUE)) checker = "Blue";
+        else if (_hashStr(_player) == _hashStr(RED)) checker = "Red";
         else checker = "Yellow";
     }
 
-    function _hash(string memory _value) internal pure returns (bytes32) {
+    function _hashStr(string memory _value) internal pure returns (bytes32) {
         return keccak256(abi.encodePacked(_value));
     }
 }

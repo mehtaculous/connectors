@@ -61,9 +61,6 @@ contract Connectors is IConnectors, ERC721, ERC721Holder, Ownable {
         game.player2 = _opponent;
         game.turn = PLAYER_2;
 
-        // Registers game on metadata contract
-        IMetadata(metadata).register(totalSupply);
-
         // Mints new board to this contract
         _safeMint(address(this), totalSupply);
 
@@ -243,7 +240,12 @@ contract Connectors is IConnectors, ERC721, ERC721Holder, Ownable {
     }
 
     /// @dev Checks if move wins game in all four directions
-    function _checkBoard(uint8 _playerId, uint8 _row, uint8 _col, uint8[COL][ROW] storage _board) internal view returns (Strat result) {
+    function _checkBoard(
+        uint8 _playerId,
+        uint8 _row,
+        uint8 _col,
+        uint8[COL][ROW] storage _board
+    ) internal view returns (Strat result) {
         result = _checkHorizontal(_playerId, _row, _col, _board);
         if (result == Strat.NONE) result = _checkVertical(_playerId, _row, _col, _board);
         if (result == Strat.NONE) result = _checkAscending(_playerId, _row, _col, _board);

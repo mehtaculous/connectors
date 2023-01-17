@@ -12,7 +12,7 @@ Just a friendly on-chain game of Connect Four. Your move anon.
 - Challenge anyone to a game of Connect Four.
 - Both players must pay a fee of **.0420** eth to play.
 - Each new game mints an ERC-721 token of an empty game board.
-- Follow along with the game on any [marketplace](https://testnets.opensea.io/collection/connectors-tdlxpau9n2) that supports on-chain art.
+- Follow along with the game on any [marketplace](https://testnets.opensea.io/collection/connectors-2jueo9fovz) that supports on-chain art.
 
 ### `Begin`
 
@@ -22,7 +22,6 @@ Just a friendly on-chain game of Connect Four. Your move anon.
 - Each board consists of **6** Rows and **7** Columns that are *zero-indexed*.
 - The `row` values range from **0 - 5**.
 - The `col` values range from **0 - 6**.
-- Row values are only valid if the cell below it has already been occupied.
 
 ### `Move`
 
@@ -48,8 +47,8 @@ Just a friendly on-chain game of Connect Four. Your move anon.
 
 | Name                | Address                                                                                                                      |
 | ---------------     | ---------------------------------------------------------------------------------------------------------------------------- |
-| `Connectors.sol`    | [0x08C2be5809feeB1010F5fEeb872351EB1E209Dd4](https://goerli.etherscan.io/address/0x08C2be5809feeB1010F5fEeb872351EB1E209Dd4) |
-| `Metadata.sol`      | [0x6c364Bb2a167eD823C60fdB1598Ae027D2320de7](https://goerli.etherscan.io/address/0x6c364Bb2a167eD823C60fdB1598Ae027D2320de7) |
+| `Connectors.sol`    | [0xF0146B6B330325F45298898af6517a29d957eBaf](https://goerli.etherscan.io/address/0xF0146B6B330325F45298898af6517a29d957eBaf) |
+| `Metadata.sol`      | [0x59E4e470249ECEc58348729Cd0CF489C9F2A925E](https://goerli.etherscan.io/address/0x59E4e470249ECEc58348729Cd0CF489C9F2A925E) |
 
 
 ### Gas Report
@@ -57,12 +56,12 @@ Just a friendly on-chain game of Connect Four. Your move anon.
 | Connectors.sol                         |                 |        |        |        |         |
 |----------------------------------------|-----------------|--------|--------|---------|---------|
 | Deployment Cost                        | Deployment Size |        |        |         |         |
-| 4084637                                | 20493           |        |        |         |         |
+| 4156731                                | 20853           |        |        |         |         |
 | Function Name                          | min             | avg    | median | max     | # calls |
-| begin                                  | 636             | 30789  | 31097  | 31097   | 439     |
-| challenge                              | 398             | 85114  | 94968  | 101768  | 869     |
-| getRow                                 | 14591           | 16002  | 14591  | 26591   | 3042    |
-| move                                   | 707             | 21805  | 26114  | 75476   | 2603    |
-| setFee                                 | 2619            | 4108   | 4108   | 5598    | 2       |
-| tokenURI                               | 555282          | 627775 | 581352 | 1373075 | 29      |
+| begin                                  | 597             | 54389  | 55073  | 55073   | 438     |
+| challenge                              | 442             | 85139  | 95012  | 101812  | 868     |
+| getColumn                              | 14570           | 14577  | 14570  | 26570   | 3045    |
+| move                                   | 624             | 35116  | 39701  | 86313   | 2607    |
+| setFee                                 | 2554            | 4043   | 4043   | 5533    | 2       |
+| tokenURI                               | 550852          | 626249 | 575259 | 1369926 | 27      |
 | withdraw                               | 7520            | 7520   | 7520   | 7520    | 1       |

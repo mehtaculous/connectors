@@ -7,12 +7,20 @@ import "src/Connectors.sol";
 contract DeployScript is Script {
     Connectors connectors;
     address metadata;
-    address constant OPPONENT = 0x16107A92e44E105b135d5F84D5730E9EAaa167B7;
+
+    uint64 constant FEE = 0.0420 ether;
+    address constant ARCH = 0x0aa0Bc25769C52e623D09A9764e079A221BeA2a1;
+    address constant WILL = 0x69EC014c15baF1C96620B6BA02A391aBaBB9C96b;
+    address constant STEVEN = 0xBa9B51b8d0ade90296203625d653332367a08087;
 
     function run() public {
         vm.startBroadcast();
         deploy();
-        challenge();
+        connectors.setFee(0);
+        challenge(ARCH);
+        challenge(WILL);
+        challenge(STEVEN);
+        connectors.setFee(FEE);
         vm.stopBroadcast();
     }
 
@@ -21,7 +29,7 @@ contract DeployScript is Script {
         metadata = connectors.metadata();
     }
 
-    function challenge() public {
-        connectors.challenge(OPPONENT);
+    function challenge(address _opponent) public {
+        connectors.challenge(_opponent);
     }
 }

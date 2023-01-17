@@ -70,11 +70,9 @@ contract Connectors is IConnectors, ERC721, ERC721Holder, Ownable {
     }
 
     /// @notice Activates new game and executes first move on board
-    /// @dev Row and Column numbers are zero-indexed
     /// @param _gameId ID of the game
-    /// @param _row Value of row placement on board (0-5)
-    /// @param _col Value of column placement on board (0-6)
-    function begin(uint256 _gameId, uint8 _row, uint8 _col) external payable {
+    /// @param _col Value of column placement on board (1-7)
+    function begin(uint256 _gameId, uint8 _col) external payable {
         // Reverts if game does not exist
         if (_gameId == 0 || _gameId > totalSupply) revert InvalidGame();
         Game storage game = games[_gameId];
@@ -93,15 +91,14 @@ contract Connectors is IConnectors, ERC721, ERC721Holder, Ownable {
         emit Begin(_gameId, msg.sender, game.state);
 
         // Executes first move on board
-        move(_gameId, _row, _col);
+        move(_gameId, _col);
     }
 
     /// @notice Executes next placement on active board
-    /// @dev Row and Column numbers are zero-indexed
+    /// @dev Row and Column values are zero-indexed
     /// @param _gameId ID of the game
-    /// @param _row Value of row placement on board (0-5)
     /// @param _col Value of column placement on board (0-6)
-    function move(uint256 _gameId, uint8 _row, uint8 _col) public returns (bool result) {
+    function move(uint256 _gameId, uint8 _col) public returns (bool result) {
         // Reverts if game does not exist
         if (_gameId == 0 || _gameId > totalSupply) revert InvalidGame();
         Game storage game = games[_gameId];
@@ -111,24 +108,24 @@ contract Connectors is IConnectors, ERC721, ERC721Holder, Ownable {
         if (game.state != State.ACTIVE) revert InvalidState();
         // Reverts if caller is not authorized to execute move
         if (game.turn != playerId) revert NotAuthorized();
-        // Reverts if cell is occupied or row placement is not valid
-        if (board[_row][_col] != 0 || (_row > 0 && board[_row - 1][_col] == 0))
-            revert InvalidMove();
+        // Reverts if cell is occupied
+        uint8 row = getNextRow(board, _col);
+        if (board[row][_col] != 0) revert InvalidMove();
 
         // Increments total number of moves made
         ++game.moves;
         uint8 moves = game.moves;
 
         // Records player move
-        game.row = _row;
+        game.row = row;
         game.col = _col;
-        board[_row][_col] = playerId;
+        board[row][_col] = playerId;
 
         // Emits event for creating new move on board
-        emit Move(_gameId, msg.sender, moves, _row, _col);
+        emit Move(_gameId, msg.sender, moves, row, _col);
 
         // Only checks board for win if minimum number of moves have been made
-        if (moves > 6) result = _checkBoard(playerId, _row, _col, board);
+        if (moves > 6) result = _checkBoard(playerId, row, _col, board);
 
         // Checks if game has been won
         if (result) {
@@ -158,7 +155,7 @@ contract Connectors is IConnectors, ERC721, ERC721Holder, Ownable {
     /// @notice Gets the entire column for a given row
     /// @param _gameId ID of the game
     /// @param _row Value of row number on board
-    function getRow(uint256 _gameId, uint8 _row) external view returns (uint8[COL] memory) {
+    function getColumn(uint256 _gameId, uint8 _row) external view returns (uint8[COL] memory) {
         Game memory game = games[_gameId];
         return game.board[_row];
     }
@@ -218,6 +215,15 @@ contract Connectors is IConnectors, ERC721, ERC721Holder, Ownable {
                     )
                 )
             );
+    }
+
+    /// @notice Gets the next row value for the given column
+    /// @param _board Current state of the game board
+    /// @param _col Value of the column placement
+    function getNextRow(uint8[COL][ROW] memory _board, uint8 _col) public pure returns (uint8 row) {
+        for (uint8 i; i < ROW; ++i) {
+            if (_board[i][_col] == 0) row = i;
+        }
     }
 
     /// @dev Executes when game finishes with a winner

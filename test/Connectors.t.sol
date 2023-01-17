@@ -125,7 +125,7 @@ contract ConnectorsTest is Test {
         testChallengeSuccess();
         _col = _boundCol(_col, 0, COL);
         // execute
-        _begin(eve, gameId, row, _col, FEE);
+        _begin(eve, gameId, _col, FEE);
         connectors.tokenURI(gameId);
         // assert
         assertEq(board[row][col], PLAYER_2);
@@ -143,7 +143,7 @@ contract ConnectorsTest is Test {
         // revert
         vm.expectRevert(INVALID_GAME_ERROR);
         // execute
-        _begin(eve, ++gameId, row, _col, FEE);
+        _begin(eve, ++gameId, _col, FEE);
     }
 
     function testBeginRevertInvalidState(uint8 _col) public {
@@ -153,7 +153,7 @@ contract ConnectorsTest is Test {
         // revert
         vm.expectRevert(INVALID_STATE_ERROR);
         // execute
-        _begin(eve, gameId, row, _col, FEE);
+        _begin(eve, gameId, _col, FEE);
     }
 
     function testBeginRevertNotAuthorized(uint8 _col) public {
@@ -163,7 +163,7 @@ contract ConnectorsTest is Test {
         // revert
         vm.expectRevert(NOT_AUTHORIZED_ERROR);
         // execute
-        _begin(bob, gameId, row, _col, FEE);
+        _begin(bob, gameId, _col, FEE);
     }
 
     function testBeginRevertInvalidPayment(uint8 _col) public {
@@ -173,7 +173,7 @@ contract ConnectorsTest is Test {
         // revert
         vm.expectRevert(INVALID_PAYMENT_ERROR);
         // execute
-        _begin(eve, gameId, row, _col, FEE - 1);
+        _begin(eve, gameId, _col, FEE - 1);
     }
 
     /// ================
@@ -182,9 +182,9 @@ contract ConnectorsTest is Test {
     function testMoveSuccess() public {
         // setup
         _challenge(bob, eve, FEE);
-        _begin(eve, gameId, row, col, FEE);
+        _begin(eve, gameId, col, FEE);
         // execute
-        _move(bob, gameId, row, col + 1);
+        _move(bob, gameId, col + 1);
         connectors.tokenURI(gameId);
         // assert
         assertEq(board[row][col], PLAYER_1);
@@ -196,10 +196,11 @@ contract ConnectorsTest is Test {
         // setup
         testBeginSuccess(_col);
         _col = _boundCol(_col, 0, COL);
+        console.log(connectors.totalSupply());
         // revert
         vm.expectRevert(INVALID_GAME_ERROR);
         // execute
-        _move(bob, ++gameId, row, _col);
+        _move(bob, ++gameId, _col);
     }
 
     function testMoveRevertInvalidState(uint8 _col) public {
@@ -209,7 +210,7 @@ contract ConnectorsTest is Test {
         // revert
         vm.expectRevert(INVALID_STATE_ERROR);
         // execute
-        _move(bob, gameId, row, _col);
+        _move(bob, gameId, _col);
     }
 
     function testMoveRevertNotAuthorized(uint8 _col) public {
@@ -219,16 +220,7 @@ contract ConnectorsTest is Test {
         // revert
         vm.expectRevert(NOT_AUTHORIZED_ERROR);
         // execute
-        _move(eve, gameId, row, _col);
-    }
-
-    function testMoveRevertRowOutOfBounds(uint8 _col) public {
-        // setup
-        testBeginSuccess(_col);
-        // revert
-        vm.expectRevert();
-        // execute
-        _move(bob, gameId, ROW, col);
+        _move(eve, gameId, _col);
     }
 
     function testMoveRevertColOutOfBounds(uint8 _col) public {
@@ -237,16 +229,21 @@ contract ConnectorsTest is Test {
         // revert
         vm.expectRevert();
         // execute
-        _move(bob, gameId, row, COL);
+        _move(bob, gameId, COL);
     }
 
     function testMoveRevertInvalidMove(uint8 _col) public {
         // setup
         testBeginSuccess(_col);
+        _move(bob, gameId, col);
+        _move(eve, gameId, col);
+        _move(bob, gameId, col);
+        _move(eve, gameId, col);
+        _move(bob, gameId, col);
         // revert
         vm.expectRevert(INVALID_MOVE_ERROR);
         // execute
-        _move(bob, gameId, row, col);
+        _move(eve, gameId, col);
     }
 
     /// ========================
@@ -342,13 +339,13 @@ contract ConnectorsTest is Test {
     function testHorizontal() public {
         // setup
         _challenge(bob, eve, FEE);
-        _begin(eve, gameId, 0, 0, FEE);
-        _move(bob, gameId, 1, 0);
-        _move(eve, gameId, 0, 1);
-        _move(bob, gameId, 2, 0);
-        _move(eve, gameId, 0, 2);
-        _move(bob, gameId, 3, 0);
-        _move(eve, gameId, 0, 3);
+        _begin(eve, gameId, 0, FEE);
+        _move(bob, gameId, 0);
+        _move(eve, gameId, 1);
+        _move(bob, gameId, 0);
+        _move(eve, gameId, 2);
+        _move(bob, gameId, 0);
+        _move(eve, gameId, 3);
         connectors.tokenURI(gameId);
         // assert
         assertEq(turn, PLAYER_2);
@@ -361,13 +358,13 @@ contract ConnectorsTest is Test {
     function testVertical() public {
         // setup
         _challenge(bob, eve, FEE);
-        _begin(eve, gameId, 0, 0, FEE);
-        _move(bob, gameId, 0, 1);
-        _move(eve, gameId, 1, 0);
-        _move(bob, gameId, 0, 2);
-        _move(eve, gameId, 2, 0);
-        _move(bob, gameId, 0, 3);
-        _move(eve, gameId, 3, 0);
+        _begin(eve, gameId, 0, FEE);
+        _move(bob, gameId, 1);
+        _move(eve, gameId, 0);
+        _move(bob, gameId, 2);
+        _move(eve, gameId, 0);
+        _move(bob, gameId, 3);
+        _move(eve, gameId, 0);
         connectors.tokenURI(gameId);
         // assert
         assertEq(turn, PLAYER_2);
@@ -380,19 +377,19 @@ contract ConnectorsTest is Test {
     function testAscending() public {
         // setup
         _challenge(bob, eve, FEE);
-        _begin(eve, gameId, 0, 0, FEE);
-        _move(bob, gameId, 0, 1);
-        _move(eve, gameId, 1, 1);
-        _move(bob, gameId, 0, 2);
-        _move(eve, gameId, 0, 4);
-        _move(bob, gameId, 1, 2);
-        _move(eve, gameId, 1, 4);
-        _move(bob, gameId, 0, 3);
-        _move(eve, gameId, 1, 3);
-        _move(bob, gameId, 2, 3);
-        _move(eve, gameId, 3, 3);
-        _move(bob, gameId, 0, 5);
-        _move(eve, gameId, 2, 2);
+        _begin(eve, gameId, 0, FEE);
+        _move(bob, gameId, 1);
+        _move(eve, gameId, 1);
+        _move(bob, gameId, 2);
+        _move(eve, gameId, 4);
+        _move(bob, gameId, 2);
+        _move(eve, gameId, 4);
+        _move(bob, gameId, 3);
+        _move(eve, gameId, 3);
+        _move(bob, gameId, 3);
+        _move(eve, gameId, 3);
+        _move(bob, gameId, 5);
+        _move(eve, gameId, 2);
         connectors.tokenURI(gameId);
         // assert
         assertEq(turn, PLAYER_2);
@@ -405,17 +402,17 @@ contract ConnectorsTest is Test {
     function testDescending() public {
         // setup
         _challenge(bob, eve, FEE);
-        _begin(eve, gameId, 0, 0, FEE);
-        _move(bob, gameId, 1, 0);
-        _move(eve, gameId, 2, 0);
-        _move(bob, gameId, 0, 1);
-        _move(eve, gameId, 3, 0);
-        _move(bob, gameId, 1, 1);
-        _move(eve, gameId, 2, 1);
-        _move(bob, gameId, 0, 2);
-        _move(eve, gameId, 1, 2);
-        _move(bob, gameId, 2, 2);
-        _move(eve, gameId, 0, 3);
+        _begin(eve, gameId, 0, FEE);
+        _move(bob, gameId, 0);
+        _move(eve, gameId, 0);
+        _move(bob, gameId, 1);
+        _move(eve, gameId, 0);
+        _move(bob, gameId, 1);
+        _move(eve, gameId, 1);
+        _move(bob, gameId, 2);
+        _move(eve, gameId, 2);
+        _move(bob, gameId, 2);
+        _move(eve, gameId, 3);
         connectors.tokenURI(gameId);
         // assert
         assertEq(turn, PLAYER_2);
@@ -431,48 +428,48 @@ contract ConnectorsTest is Test {
     function testDraw() public {
         // setup
         _challenge(bob, eve, FEE);
-        _begin(eve, gameId, 0, 0, FEE);
-        _move(bob, gameId, 1, 0);
-        _move(eve, gameId, 2, 0);
-        _move(bob, gameId, 3, 0);
-        _move(eve, gameId, 4, 0);
-        _move(bob, gameId, 5, 0);
-        _move(eve, gameId, 0, 1);
-        _move(bob, gameId, 1, 1);
-        _move(eve, gameId, 2, 1);
-        _move(bob, gameId, 3, 1);
-        _move(eve, gameId, 4, 1);
-        _move(bob, gameId, 5, 1);
-        _move(eve, gameId, 0, 2);
-        _move(bob, gameId, 1, 2);
-        _move(eve, gameId, 2, 2);
-        _move(bob, gameId, 3, 2);
-        _move(eve, gameId, 4, 2);
-        _move(bob, gameId, 5, 2);
-        _move(eve, gameId, 0, 4);
-        _move(bob, gameId, 0, 3);
-        _move(eve, gameId, 1, 3);
-        _move(bob, gameId, 2, 3);
-        _move(eve, gameId, 3, 3);
-        _move(bob, gameId, 4, 3);
-        _move(eve, gameId, 5, 3);
-        _move(bob, gameId, 1, 4);
-        _move(eve, gameId, 2, 4);
-        _move(bob, gameId, 3, 4);
-        _move(eve, gameId, 4, 4);
-        _move(bob, gameId, 5, 4);
-        _move(eve, gameId, 0, 5);
-        _move(bob, gameId, 1, 5);
-        _move(eve, gameId, 2, 5);
-        _move(bob, gameId, 3, 5);
-        _move(eve, gameId, 4, 5);
-        _move(bob, gameId, 5, 5);
-        _move(eve, gameId, 0, 6);
-        _move(bob, gameId, 1, 6);
-        _move(eve, gameId, 2, 6);
-        _move(bob, gameId, 3, 6);
-        _move(eve, gameId, 4, 6);
-        _move(bob, gameId, 5, 6);
+        _begin(eve, gameId, 0, FEE);
+        _move(bob, gameId, 0);
+        _move(eve, gameId, 0);
+        _move(bob, gameId, 0);
+        _move(eve, gameId, 0);
+        _move(bob, gameId, 0);
+        _move(eve, gameId, 1);
+        _move(bob, gameId, 1);
+        _move(eve, gameId, 1);
+        _move(bob, gameId, 1);
+        _move(eve, gameId, 1);
+        _move(bob, gameId, 1);
+        _move(eve, gameId, 2);
+        _move(bob, gameId, 2);
+        _move(eve, gameId, 2);
+        _move(bob, gameId, 2);
+        _move(eve, gameId, 2);
+        _move(bob, gameId, 2);
+        _move(eve, gameId, 4);
+        _move(bob, gameId, 3);
+        _move(eve, gameId, 3);
+        _move(bob, gameId, 3);
+        _move(eve, gameId, 3);
+        _move(bob, gameId, 3);
+        _move(eve, gameId, 3);
+        _move(bob, gameId, 4);
+        _move(eve, gameId, 4);
+        _move(bob, gameId, 4);
+        _move(eve, gameId, 4);
+        _move(bob, gameId, 4);
+        _move(eve, gameId, 5);
+        _move(bob, gameId, 5);
+        _move(eve, gameId, 5);
+        _move(bob, gameId, 5);
+        _move(eve, gameId, 5);
+        _move(bob, gameId, 5);
+        _move(eve, gameId, 6);
+        _move(bob, gameId, 6);
+        _move(eve, gameId, 6);
+        _move(bob, gameId, 6);
+        _move(eve, gameId, 6);
+        _move(bob, gameId, 6);
         connectors.tokenURI(gameId);
         // assert
         assertEq(turn, 0);
@@ -488,13 +485,13 @@ contract ConnectorsTest is Test {
 
     function simulateGame(address _player1, address _player2) public {
         _challenge(_player1, _player2, FEE);
-        _begin(_player2, gameId, 0, 0, FEE);
-        _move(_player1, gameId, 1, 0);
-        _move(_player2, gameId, 0, 1);
-        _move(_player1, gameId, 2, 0);
-        _move(_player2, gameId, 0, 2);
-        _move(_player1, gameId, 3, 0);
-        _move(_player2, gameId, 0, 3);
+        _begin(_player2, gameId, 0, FEE);
+        _move(_player1, gameId, 0);
+        _move(_player2, gameId, 1);
+        _move(_player1, gameId, 0);
+        _move(_player2, gameId, 2);
+        _move(_player1, gameId, 0);
+        _move(_player2, gameId, 3);
     }
 
     function printBoard() public view {
@@ -519,22 +516,16 @@ contract ConnectorsTest is Test {
     function _begin(
         address _sender,
         uint256 _gameId,
-        uint8 _row,
         uint8 _col,
         uint256 _fee
     ) internal prank(_sender) {
-        connectors.begin{value: _fee}(_gameId, _row, _col);
+        connectors.begin{value: _fee}(_gameId, _col);
         _setState(gameId);
         if (row < ROW) _setBoard(gameId, row);
     }
 
-    function _move(
-        address _sender,
-        uint256 _gameId,
-        uint8 _row,
-        uint8 _col
-    ) internal prank(_sender) {
-        connectors.move(_gameId, _row, _col);
+    function _move(address _sender, uint256 _gameId, uint8 _col) internal prank(_sender) {
+        connectors.move(_gameId, _col);
         _setState(gameId);
         if (row < ROW) _setBoard(gameId, row);
     }
@@ -556,7 +547,7 @@ contract ConnectorsTest is Test {
     }
 
     function _setBoard(uint256 _gameId, uint8 _row) internal {
-        board[_row] = connectors.getRow(_gameId, _row);
+        board[_row] = connectors.getColumn(_gameId, _row);
     }
 
     function _boundCol(uint8 _col, uint8 _min, uint8 _max) internal view returns (uint8 value) {

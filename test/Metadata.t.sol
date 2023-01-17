@@ -37,12 +37,6 @@ contract MetadataTest is Test {
         vm.stopPrank();
     }
 
-    modifier prankOrigin(address _sender, address _origin) {
-        vm.startPrank(_sender, _origin);
-        _;
-        vm.stopPrank();
-    }
-
     /// =================
     /// ===== SETUP =====
     /// =================
@@ -109,7 +103,7 @@ contract MetadataTest is Test {
         yellow = IMetadata(metadata).YELLOW();
     }
 
-    function _challenge(address _sender, address _opponent) internal prankOrigin(_sender, _sender) {
+    function _challenge(address _sender, address _opponent) internal prank(_sender) {
         connectors.challenge(_opponent);
         gameId = connectors.currentId();
     }

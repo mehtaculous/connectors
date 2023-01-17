@@ -9,7 +9,7 @@ Just a friendly on-chain game of Connect Four. Your move anon.
 
 > Creates a new game and mints an empty game board
 
-- Challenge any EOA to a game of Connect Four.
+- Challenge anyone to a game of Connect Four.
 - Each new game mints an ERC-721 token of an empty game board.
 - Follow along with the game on any [marketplace](https://testnets.opensea.io/collection/connectors-v3) that supports on-chain art.
 
@@ -55,13 +55,12 @@ Just a friendly on-chain game of Connect Four. Your move anon.
 | Connectors.sol                         |                 |        |        |        |         |
 |----------------------------------------|-----------------|--------|--------|--------|---------|
 | Deployment Cost                        | Deployment Size |        |        |        |         |
-| 4727054                                | 23626           |        |        |        |         |
+| 4564238                                | 22813           |        |        |        |         |
 | Function Name                          | min             | avg    | median | max    | # calls |
-| begin                                  | 657             | 24012  | 29219  | 31119  | 19      |
-| challenge                              | 447             | 171719 | 205722 | 205722 | 24      |
-| games                                  | 1117            | 1277   | 1117   | 5117   | 125     |
-| getRow                                 | 14771           | 15701  | 14771  | 26771  | 101     |
-| move                                   | 640             | 15883  | 10349  | 94070  | 83      |
+| begin                                  | 679             | 24028  | 29241  | 31141  | 19      |
+| challenge                              | 443             | 184763 | 203089 | 203089 | 22      |
+| getRow                                 | 14793           | 15723  | 14793  | 26793  | 101     |
+| move                                   | 662             | 15249  | 10371  | 80472  | 83      |
 | setFee                                 | 2573            | 5024   | 5024   | 7475   | 2       |
-| tokenURI                               | 267183          | 295531 | 270400 | 570652 | 29      |
+| tokenURI                               | 266991          | 295910 | 270209 | 570458 | 29      |
 | withdraw                               | 9498            | 9498   | 9498   | 9498   | 1       |

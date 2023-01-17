@@ -38,7 +38,6 @@ contract ConnectorsTest is Test {
     bytes4 INVALID_MATCHUP_ERROR = IConnectors.InvalidMatchup.selector;
     bytes4 INVALID_MOVE_ERROR = IConnectors.InvalidMove.selector;
     bytes4 INVALID_PAYMENT_ERROR = IConnectors.InvalidPayment.selector;
-    bytes4 INVALID_PLAYER_ERROR = IConnectors.InvalidPlayer.selector;
     bytes4 INVALID_STATE_ERROR = IConnectors.InvalidState.selector;
     bytes4 NOT_AUTHORIZED_ERROR = IConnectors.NotAuthorized.selector;
 
@@ -47,12 +46,6 @@ contract ConnectorsTest is Test {
     /// =====================
     modifier prank(address _sender) {
         vm.startPrank(_sender);
-        _;
-        vm.stopPrank();
-    }
-
-    modifier prankOrigin(address _sender, address _origin) {
-        vm.startPrank(_sender, _origin);
         _;
         vm.stopPrank();
     }
@@ -93,20 +86,6 @@ contract ConnectorsTest is Test {
         assertEq(address(connectors).balance, FEE);
         assertEq(connectors.ownerOf(gameId), address(connectors));
         connectors.tokenURI(gameId);
-    }
-
-    function testChallengeRevertInvalidPlayerOrigin() public {
-        // revert
-        vm.expectRevert(INVALID_PLAYER_ERROR);
-        // execute
-        connectors.challenge(bob);
-    }
-
-    function testChallengeRevertInvalidPlayerContract() public {
-        // revert
-        vm.expectRevert(INVALID_PLAYER_ERROR);
-        // execute
-        _challenge(bob, address(this), FEE);
     }
 
     function testChallengeRevertInvalidMatchup() public {
@@ -462,11 +441,7 @@ contract ConnectorsTest is Test {
         }
     }
 
-    function _challenge(
-        address _sender,
-        address _opponent,
-        uint256 _fee
-    ) internal prankOrigin(_sender, _sender) {
+    function _challenge(address _sender, address _opponent, uint256 _fee) internal prank(_sender) {
         connectors.challenge{value: _fee}(_opponent);
         _setGame();
         _setState(gameId);

@@ -49,8 +49,6 @@ contract Connectors is IConnectors, ERC721, ERC721Holder, Ownable {
     /// @dev Game can only become active once opponent calls begin
     /// @param _opponent Address of opponent
     function challenge(address _opponent) external payable {
-        // Reverts if caller or opponent is a smart contract
-        if (msg.sender != tx.origin || _isContract(_opponent)) revert InvalidPlayer();
         // Reverts if caller is also the opponent
         if (msg.sender == _opponent) revert InvalidMatchup();
         // Reverts if payment amount is incorrect
@@ -217,12 +215,16 @@ contract Connectors is IConnectors, ERC721, ERC721Holder, Ownable {
         uint8[COL][ROW] memory board = game.board;
         address player1 = game.player1;
         address player2 = game.player2;
-        string memory title = (game.state == State.SUCCESS) ? "Connector #" : "Board #";
-        string memory name = string.concat(title, _tokenId.toString());
+        string memory name;
         string memory description = "Just a friendly on-chain game of Connect Four. Your move anon.";
-        string memory playerTraits = generatePlayerTraits(_tokenId, player1, player2);
-        string memory gameTraits = generateGameTraits(game);
+        string memory gameTraits = _generateGameTraits(game);
+        string memory playerTraits = _generatePlayerTraits(_tokenId, player1, player2);
         string memory image = IMetadata(metadata).generateSVG(_tokenId, game.row, game.col, board);
+        if (game.state == State.SUCCESS && ownerOf(_tokenId) != address(this)) {
+            name = string.concat("Connector #", _tokenId.toString());
+        } else {
+            name = string.concat("Board #", _tokenId.toString());
+        }
 
         return
             string(
@@ -241,79 +243,6 @@ contract Connectors is IConnectors, ERC721, ERC721Holder, Ownable {
                         playerTraits,
                         gameTraits,
                     "]}"
-                )
-            );
-    }
-
-    /// @dev Generates JSON formatted data of player traits
-    /// @param _tokenId ID of the token
-    /// @param _player1 Address of player1
-    /// @param _player2 Address of player2
-    /// return JSON data of player traits
-    function generatePlayerTraits(
-        uint256 _tokenId,
-        address _player1,
-        address _player2
-    ) public view returns (string memory) {
-        string memory player1 = uint160(_player1).toHexString(20);
-        string memory player2 = uint160(_player2).toHexString(20);
-        (string memory checker1, string memory checker2) = IMetadata(metadata).getChecker(_tokenId);
-
-        return
-            string(
-                abi.encodePacked(
-                    '{"trait_type":"',
-                        checker1,
-                    '", "value":"',
-                        player1,
-                    '"},',
-                    '{"trait_type":"',
-                        checker2,
-                    '", "value":"',
-                        player2,
-                    '"},'
-                )
-            );
-    }
-
-    /// @dev Generates JSON formatted data of game traits
-    /// @param _game Game information
-    /// return JSON data of game traits
-    function generateGameTraits(Game memory _game) public view returns (string memory) {
-        string memory moves = _game.moves.toString();
-        string memory status = IMetadata(metadata).getStatus(_game.state);
-        string memory turn = uint160(address(0)).toHexString(20);
-        string memory label = (_game.state == State.SUCCESS) ? "Winner" : "Turn";
-        if (_game.turn == PLAYER_1) {
-            turn = uint160(_game.player1).toHexString(20);
-        } else if (_game.turn == PLAYER_2) {
-            turn = uint160(_game.player2).toHexString(20);
-        }
-        string memory latest = string.concat(
-            "(",
-            _game.row.toString(),
-            ", ",
-            _game.col.toString(),
-            ")"
-        );
-
-        return
-            string(
-                abi.encodePacked(
-                    '{"trait_type":"Latest", "value":"',
-                        latest,
-                    '"},',
-                    '{"trait_type":"Moves", "value":"',
-                        moves,
-                    '"},',
-                    '{"trait_type":"Status", "value":"',
-                        status,
-                    '"},',
-                    '{"trait_type":"',
-                        label,
-                    '", "value":"',
-                        turn,
-                    '"}'
                 )
             );
     }
@@ -451,6 +380,73 @@ contract Connectors is IConnectors, ERC721, ERC721Holder, Ownable {
         if (counter > 2) result = Strat.DESCENDING;
     }
 
+    /// @dev Generates JSON formatted data of game traits
+    function _generateGameTraits(Game memory _game) internal view returns (string memory) {
+        string memory moves = _game.moves.toString();
+        string memory status = IMetadata(metadata).getStatus(_game.state);
+        string memory label = (_game.state == State.SUCCESS) ? "Winner" : "Turn";
+        string memory turn = uint160(address(0)).toHexString(20);
+        if (_game.turn == PLAYER_1) {
+            turn = uint160(_game.player1).toHexString(20);
+        } else if (_game.turn == PLAYER_2) {
+            turn = uint160(_game.player2).toHexString(20);
+        }
+        string memory latest = string.concat(
+            "(",
+            _game.row.toString(),
+            ", ",
+            _game.col.toString(),
+            ")"
+        );
+
+        return
+            string(
+                abi.encodePacked(
+                    '{"trait_type":"Latest", "value":"',
+                        latest,
+                    '"},',
+                    '{"trait_type":"Moves", "value":"',
+                        moves,
+                    '"},',
+                    '{"trait_type":"Status", "value":"',
+                        status,
+                    '"},',
+                    '{"trait_type":"',
+                        label,
+                    '", "value":"',
+                        turn,
+                    '"}'
+                )
+            );
+    }
+
+    /// @dev Generates JSON formatted data of player traits
+    function _generatePlayerTraits(
+        uint256 _gameId,
+        address _player1,
+        address _player2
+    ) internal view returns (string memory) {
+        string memory player1 = uint160(_player1).toHexString(20);
+        string memory player2 = uint160(_player2).toHexString(20);
+        (string memory checker1, string memory checker2) = IMetadata(metadata).getChecker(_gameId);
+
+        return
+            string(
+                abi.encodePacked(
+                    '{"trait_type":"',
+                        checker1,
+                    '", "value":"',
+                        player1,
+                    '"},',
+                    '{"trait_type":"',
+                        checker2,
+                    '", "value":"',
+                        player2,
+                    '"},'
+                )
+            );
+    }
+
     /// @dev Gets player ID of caller
     function _getPlayerId(
         Game storage _game,
@@ -461,14 +457,5 @@ contract Connectors is IConnectors, ERC721, ERC721Holder, Ownable {
         } else if (_player == _game.player2) {
             playerId = PLAYER_2;
         }
-    }
-
-    /// @dev Checks if given address is a smart contract
-    function _isContract(address _addr) internal view returns (bool) {
-        uint256 size;
-        assembly {
-            size := extcodesize(_addr)
-        }
-        return size > 0;
     }
 }

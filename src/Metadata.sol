@@ -10,12 +10,12 @@ contract Metadata is IMetadata, Ownable {
     string public constant BLUE = "#29335c";
     string public constant RED = "#DB2B39";
     string public constant YELLOW = "#F3A712";
-    string[] palette = [YELLOW, BLUE, RED];
     mapping(uint256 => Render) public renders;
 
     constructor() payable {}
 
     function register(uint256 _gameId) external onlyOwner {
+        string[3] memory palette = [YELLOW, BLUE, RED];
         Render storage render = renders[_gameId];
         render.base = palette[(_gameId - 1) % 3];
         render.player1 = palette[(_gameId) % 3];

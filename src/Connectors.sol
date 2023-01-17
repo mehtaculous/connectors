@@ -35,7 +35,7 @@ contract Connectors is IConnectors, ERC721, ERC721Holder, Ownable {
     address public immutable metadata;
     /// @notice Current game ID
     uint256 public currentId;
-    /// @notice Ether amount required to play per player
+    /// @notice Ether amount required to play (per player)
     uint256 public fee = 0.0420 ether;
     /// @notice Mapping of game ID to game info
     mapping(uint256 => Game) public games;
@@ -195,7 +195,7 @@ contract Connectors is IConnectors, ERC721, ERC721Holder, Ownable {
 
     /// @notice Returns royalty information for secondary sales
     function royaltyInfo(
-        uint256 /* _id */,
+        uint256 /* _tokenId */,
         uint256 _salePrice
     ) external view returns (address receiver, uint256 royalty) {
         receiver = owner();

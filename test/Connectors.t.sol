@@ -31,6 +31,7 @@ contract ConnectorsTest is Test {
     // Constants
     uint256 constant FEE = .042 ether;
     uint256 constant ETH_BALANCE = 100 ether;
+    uint256 constant MAX_SUPPLY = 100;
 
     // Errors
     bytes NOT_OWNER_ERROR = bytes("Ownable: caller is not the owner");
@@ -273,6 +274,30 @@ contract ConnectorsTest is Test {
         connectors.tokenURI(gameId);
     }
 
+    /// ========================
+    /// ===== TOTAL SUPPLY =====
+    /// ========================
+    function testTotalSupply() public {
+        for (uint256 i; i < MAX_SUPPLY; ++i) {
+            // setup
+            simulateGame(bob, eve);
+            // assert
+            assertEq(connectors.ownerOf(gameId), eve);
+            assertEq(connectors.totalSupply(), i + 1);
+        }
+    }
+
+    function testTotalSupplyMax() public {
+        // setup
+        testTotalSupply();
+        // execute
+        simulateGame(bob, eve);
+        // assert
+        assertTr(gameId > MAX_SUPPLY);
+        assertEq(connectors.ownerOf(gameId), address(connectors));
+        assertEq(connectors.totalSupply(), MAX_SUPPLY);
+    }
+
     /// ===================
     /// ===== SUCCESS =====
     /// ===================
@@ -439,6 +464,17 @@ contract ConnectorsTest is Test {
             ++x;
             y = 1;
         }
+    }
+
+    function simulateGame(address _player1, address _player2) public view {
+        _challenge(_player1, _player2, FEE);
+        _begin(_player2, gameId, 0, 0, FEE);
+        _move(_player1, gameId, 1, 0);
+        _move(_player2, gameId, 0, 1);
+        _move(_player1, gameId, 2, 0);
+        _move(_player2, gameId, 0, 2);
+        _move(_player1, gameId, 3, 0);
+        _move(_player2, gameId, 0, 3);
     }
 
     function _challenge(address _sender, address _opponent, uint256 _fee) internal prank(_sender) {

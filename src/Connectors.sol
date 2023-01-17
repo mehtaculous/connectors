@@ -220,10 +220,14 @@ contract Connectors is IConnectors, ERC721, ERC721Holder, Ownable {
     /// @notice Gets the next row value for the given column
     /// @param _board Current state of the game board
     /// @param _col Value of the column placement
-    function getNextRow(uint8[COL][ROW] memory _board, uint8 _col) public pure returns (uint8 row) {
-        for (uint8 i; i < ROW; ++i) {
-            if (_board[i][_col] == 0) row = i;
+    function getNextRow(uint8[COL][ROW] memory _board, uint8 _col) public pure returns (uint8) {
+        for (uint8 row; row < ROW; ++row) {
+            if (_board[row][_col] == 0)  {
+                return row;
+            }
         }
+
+        return 0;
     }
 
     /// @dev Executes when game finishes with a winner

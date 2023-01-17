@@ -184,7 +184,7 @@ contract Connectors is IConnectors, ERC721, ERC721Holder, Ownable {
         address player2 = game.player2;
         string memory name = (game.state == State.SUCCESS)
             ? string.concat("Connector #", _tokenId.toString())
-            : string.concat("Board #", _tokenId.toString());
+            : string.concat("Game #", _tokenId.toString());
         string memory description = "Just a friendly on-chain game of Connect Four. Your move anon.";
         string memory gameTraits = _generateGameTraits(game);
         string memory playerTraits = _generatePlayerTraits(_tokenId, player1, player2);

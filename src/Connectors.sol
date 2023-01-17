@@ -20,6 +20,7 @@ import "@openzeppelin/contracts/token/ERC721/utils/ERC721Holder.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "src/Metadata.sol";
 import "src/interfaces/IConnectors.sol";
+import "src/lib/Base64.sol";
 
 /// @notice Just a friendly on-chain game of Connect Four
 contract Connectors is IConnectors, ERC721, ERC721Holder, Ownable {
@@ -190,25 +191,31 @@ contract Connectors is IConnectors, ERC721, ERC721Holder, Ownable {
         string memory description = "Just a friendly on-chain game of Connect Four. Your move anon.";
         string memory gameTraits = _generateGameTraits(game);
         string memory playerTraits = _generatePlayerTraits(_tokenId, player1, player2);
-        string memory image = IMetadata(metadata).generateSVG(_tokenId, game.row, game.col, board);
+        string memory image = Base64.encode(
+            abi.encodePacked(IMetadata(metadata).generateSVG(_tokenId, game.row, game.col, board))
+        );
 
         return
-            string(
-                abi.encodePacked(
-                    "data:application/json;utf8,",
-                    '{"name":"',
-                        name,
-                    '",',
-                    '"description":"',
-                        description,
-                    '",',
-                    '"image": "data:image/svg+xml;utf8,',
-                        image,
-                    '",',
-                    '"attributes": [',
-                        playerTraits,
-                        gameTraits,
-                    "]}"
+            string.concat(
+                "data:application/json;base64,",
+                Base64.encode(
+                    abi.encodePacked(
+                        string.concat(
+                            '{"name":"',
+                                name,
+                            '",',
+                            '"description":"',
+                                description,
+                            '",',
+                            '"image": "data:image/svg+xml;base64,',
+                                image,
+                            '",',
+                            '"attributes": [',
+                                playerTraits,
+                                gameTraits,
+                            "]}"
+                        )
+                    )
                 )
             );
     }

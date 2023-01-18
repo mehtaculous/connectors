@@ -61,11 +61,11 @@ interface IConnectors {
 
     function fee() external view returns (uint64);
 
+    function generator() external view returns (address);
+
     function getColumn(uint256 _gameId, uint8 _row) external view returns (uint8[COL] memory);
 
     function getNextRow(uint8[COL][ROW] memory _board, uint8 _col) external view returns (uint8);
-
-    function metadata() external view returns (address);
 
     function move(uint256 _gameId, uint8 _col) external returns (bool);
 

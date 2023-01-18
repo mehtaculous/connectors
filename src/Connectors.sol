@@ -18,7 +18,7 @@ pragma solidity 0.8.13;
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/utils/ERC721Holder.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "src/Metadata.sol";
+import "src/Generator.sol";
 import "src/interfaces/IConnectors.sol";
 import "src/lib/Base64.sol";
 
@@ -31,8 +31,8 @@ contract Connectors is IConnectors, ERC721, ERC721Holder, Ownable {
     bytes4 constant _INTERFACE_ID_ERC2981 = 0x2a55205a;
     /// @notice Maximum supply of NFTs
     uint16 public constant MAX_SUPPLY = 420;
-    /// @notice Address of Metadata contract
-    address public immutable metadata;
+    /// @notice Address of Generator contract
+    address public immutable generator;
     /// @notice Current supply of NFTs
     uint16 public totalSupply;
     /// @notice Ether amount required to play (per player)
@@ -40,9 +40,9 @@ contract Connectors is IConnectors, ERC721, ERC721Holder, Ownable {
     /// @notice Mapping of game ID to game info
     mapping(uint256 => Game) public games;
 
-    /// @dev Deploys Metadata contract
+    /// @dev Deploys Generator contract
     constructor() payable ERC721("Connectors", "C4") {
-        metadata = address(new Metadata());
+        generator = address(new Generator());
     }
 
     /// @notice Creates new game and mints empty game board
@@ -70,8 +70,9 @@ contract Connectors is IConnectors, ERC721, ERC721Holder, Ownable {
     }
 
     /// @notice Activates new game and executes first move on board
+    /// @dev Column numbers are zero-indexed
     /// @param _gameId ID of the game
-    /// @param _col Value of column placement on board (1-7)
+    /// @param _col Value of column placement on board (0-6)
     function begin(uint256 _gameId, uint8 _col) external payable {
         // Reverts if game does not exist
         if (_gameId == 0 || _gameId > totalSupply) revert InvalidGame();
@@ -95,7 +96,7 @@ contract Connectors is IConnectors, ERC721, ERC721Holder, Ownable {
     }
 
     /// @notice Executes next placement on active board
-    /// @dev Row and Column values are zero-indexed
+    /// @dev Column numbers are zero-indexed
     /// @param _gameId ID of the game
     /// @param _col Value of column placement on board (0-6)
     function move(uint256 _gameId, uint8 _col) public returns (bool result) {
@@ -104,12 +105,12 @@ contract Connectors is IConnectors, ERC721, ERC721Holder, Ownable {
         Game storage game = games[_gameId];
         uint8[COL][ROW] storage board = game.board;
         uint8 playerId = _getPlayerId(game, msg.sender);
+        uint8 row = getNextRow(board, _col);
         // Reverts if game state is not Active
         if (game.state != State.ACTIVE) revert InvalidState();
         // Reverts if caller is not authorized to execute move
         if (game.turn != playerId) revert NotAuthorized();
-        // Reverts if cell is occupied
-        uint8 row = getNextRow(board, _col);
+        // Reverts if column is fully occupied
         if (board[row][_col] != 0) revert InvalidMove();
 
         // Increments total number of moves made
@@ -189,7 +190,7 @@ contract Connectors is IConnectors, ERC721, ERC721Holder, Ownable {
         string memory gameTraits = _generateGameTraits(game);
         string memory playerTraits = _generatePlayerTraits(_tokenId, player1, player2);
         string memory image = Base64.encode(
-            abi.encodePacked(IMetadata(metadata).generateSVG(_tokenId, game.row, game.col, board))
+            abi.encodePacked(IGenerator(generator).generateSVG(_tokenId, game.row, game.col, board))
         );
 
         return
@@ -221,41 +222,35 @@ contract Connectors is IConnectors, ERC721, ERC721Holder, Ownable {
     /// @param _board Current state of the game board
     /// @param _col Value of the column placement
     function getNextRow(uint8[COL][ROW] memory _board, uint8 _col) public pure returns (uint8) {
-        for (uint8 row; row < ROW; ++row) {
-            if (_board[row][_col] == 0)  {
-                return row;
+        unchecked {
+            for (uint8 row; row < ROW; ++row) {
+                if (_board[row][_col] == 0)  {
+                    return row;
+                }
             }
         }
 
         return 0;
     }
 
-    /// @dev Executes when game finishes with a winner
+    /// @dev Sets game as success and transfers connector to winner
     function _success(uint256 _gameId, Game storage _game) internal {
-        // Updates game state to success
         _game.state = State.SUCCESS;
-
-        // Emits event for finishing game with a winner
         emit Result(_gameId, msg.sender, _game.state, _game.board);
 
-        // Burns game board
         _burn(_gameId);
-
-        // Mints connector to caller
         _safeMint(msg.sender, _gameId);
     }
 
-    /// @dev Executes when game finishes with no winner
+    /// @dev Sets game as draw
     function _draw(uint256 _gameId, Game storage _game) internal {
-        // Updates game state to draw
         _game.turn = 0;
         _game.state = State.DRAW;
 
-        // Emits event for finishing game with a draw
         emit Result(_gameId, address(0), _game.state, _game.board);
     }
 
-    /// @dev Checks if move wins game in all four directions
+    /// @dev Checks if move wins game in any of the four directions
     function _checkBoard(
         uint8 _playerId,
         uint8 _row,
@@ -404,7 +399,7 @@ contract Connectors is IConnectors, ERC721, ERC721Holder, Ownable {
     /// @dev Generates JSON formatted data of game traits
     function _generateGameTraits(Game memory _game) internal view returns (string memory) {
         string memory moves = _game.moves.toString();
-        string memory status = IMetadata(metadata).getStatus(_game.state);
+        string memory status = IGenerator(generator).getStatus(_game.state);
         string memory label = (_game.state == State.SUCCESS) ? "Winner" : "Turn";
         string memory turn = uint160(address(0)).toHexString(20);
         if (_game.turn == PLAYER_1) {
@@ -449,7 +444,7 @@ contract Connectors is IConnectors, ERC721, ERC721Holder, Ownable {
     ) internal view returns (string memory) {
         string memory player1 = uint160(_player1).toHexString(20);
         string memory player2 = uint160(_player2).toHexString(20);
-        (string memory checker1, string memory checker2) = IMetadata(metadata).getCheckers(_gameId);
+        (string memory checker1, string memory checker2) = IGenerator(generator).getCheckers(_gameId);
 
         return
             string(

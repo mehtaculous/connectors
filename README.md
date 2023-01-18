@@ -10,9 +10,9 @@ Just a friendly on-chain game of Connect Four. Your move anon.
 > Creates a new game and mints an empty game board
 
 - Challenge anyone to a game of Connect Four.
-- Both players must pay a fee of **.0420** eth to play.
+- Both players are required to pay a fee of **.0420** ETH to play.
 - Each new game mints an ERC-721 token of an empty game board.
-- Follow along with the game on any [marketplace](https://testnets.opensea.io/collection/connectors-g7kowh40yu) that supports on-chain art.
+- Follow along with the game on any [marketplace](https://opensea.io/collection/connectors) that supports on-chain art.
 
 ### `Begin`
 
@@ -37,10 +37,10 @@ Just a friendly on-chain game of Connect Four. Your move anon.
 
 ### Mainnet Contracts
 
-| Name                | Address                                                                                                                      |
-| ---------------     | ---------------------------------------------------------------------------------------------------------------------------- |
-| `Connectors.sol`    | [](https://etherscan.io/address/) |
-| `Metadata.sol`      | [](https://etherscan.io/address/) |
+| Name                | Address                                                                                                               |
+| ---------------     | --------------------------------------------------------------------------------------------------------------------- |
+| `Connectors.sol`    | [0x2CCa24975eb9A8F7B42c07C965133ddabc742610](https://etherscan.io/address/0x2CCa24975eb9A8F7B42c07C965133ddabc742610) |
+| `Generator.sol`     | [0xbA3ec062961e011050e2cBA16ab2A00feE04E786](https://etherscan.io/address/0xbA3ec062961e011050e2cBA16ab2A00feE04E786) |
 
 
 ### Goerli Contracts
@@ -48,7 +48,7 @@ Just a friendly on-chain game of Connect Four. Your move anon.
 | Name                | Address                                                                                                                      |
 | ---------------     | ---------------------------------------------------------------------------------------------------------------------------- |
 | `Connectors.sol`    | [0x0461736eEDd0A9f174340A0F8fD79A5fC1C25F9D](https://goerli.etherscan.io/address/0x0461736eEDd0A9f174340A0F8fD79A5fC1C25F9D) |
-| `Metadata.sol`      | [0x024Bb80aAEBb550655fD9B3811D0c3A8b83dCeD8](https://goerli.etherscan.io/address/0x024Bb80aAEBb550655fD9B3811D0c3A8b83dCeD8) |
+| `Generator.sol`     | [0x024Bb80aAEBb550655fD9B3811D0c3A8b83dCeD8](https://goerli.etherscan.io/address/0x024Bb80aAEBb550655fD9B3811D0c3A8b83dCeD8) |
 
 
 ### Gas Report
@@ -56,12 +56,12 @@ Just a friendly on-chain game of Connect Four. Your move anon.
 | Connectors.sol                         |                 |        |        |         |         |
 |----------------------------------------|-----------------|--------|--------|---------|---------|
 | Deployment Cost                        | Deployment Size |        |        |         |         |
-| 4157731                                | 20858           |        |        |         |         |
+| 4156331                                | 20851           |        |        |         |         |
 | Function Name                          | min             | avg    | median | max     | # calls |
-| begin                                  | 597             | 53006  | 53677  | 53677   | 438     |
-| challenge                              | 442             | 85139  | 95012  | 101812  | 868     |
+| begin                                  | 575             | 52987  | 53658  | 53658   | 438     |
+| challenge                              | 420             | 85117  | 94990  | 101790  | 868     |
 | getColumn                              | 14570           | 14577  | 14570  | 26570   | 3045    |
-| move                                   | 624             | 34029  | 38576  | 85847   | 2607    |
-| setFee                                 | 2554            | 4043   | 4043   | 5533    | 2       |
-| tokenURI                               | 550614          | 626845 | 571963 | 1368793 | 27      |
-| withdraw                               | 7520            | 7520   | 7520   | 7520    | 1       |
+| move                                   | 624             | 33963  | 38502  | 85664   | 2607    |
+| setFee                                 | 2619            | 4108   | 4108   | 5598    | 2       |
+| tokenURI                               | 550614          | 628149 | 579508 | 1368793 | 27      |
+| withdraw                               | 7498            | 7498   | 7498   | 7498    | 1       |

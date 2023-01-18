@@ -4,3 +4,4 @@ out = 'out'
 libs = ['lib']
 gas_reports = ["*"]
 optimizer_runs = 200
+gas_reports = ["Connectors"]

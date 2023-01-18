@@ -14,7 +14,7 @@ contract ConnectorsTest is Test {
     address eve = address(222);
 
     // State
-    address metadata;
+    address generator;
     uint256 gameId;
     string checker1;
     string checker2;
@@ -63,7 +63,7 @@ contract ConnectorsTest is Test {
     /// =================
     function setUp() public {
         connectors = new Connectors();
-        metadata = connectors.metadata();
+        generator = connectors.generator();
 
         vm.deal(bob, BALANCE);
         vm.deal(eve, BALANCE);
@@ -71,7 +71,7 @@ contract ConnectorsTest is Test {
 
         vm.label(address(connectors), "Connectors");
         vm.label(address(this), "ConnectorsTest");
-        vm.label(metadata, "Metadata");
+        vm.label(generator, "Generator");
         vm.label(bob, "Bob");
         vm.label(eve, "Eve");
     }
@@ -303,32 +303,32 @@ contract ConnectorsTest is Test {
     function testGetCheckers() public {
         // 1
         _challenge(bob, eve, FEE);
-        (checker1, checker2) = IMetadata(metadata).getCheckers(gameId);
+        (checker1, checker2) = IGenerator(generator).getCheckers(gameId);
         assertEq(checker1, BLUE);
         assertEq(checker2, RED);
         // 2
         _challenge(bob, eve, FEE);
-        (checker1, checker2) = IMetadata(metadata).getCheckers(gameId);
+        (checker1, checker2) = IGenerator(generator).getCheckers(gameId);
         assertEq(checker1, RED);
         assertEq(checker2, YELLOW);
         // 3
         _challenge(bob, eve, FEE);
-        (checker1, checker2) = IMetadata(metadata).getCheckers(gameId);
+        (checker1, checker2) = IGenerator(generator).getCheckers(gameId);
         assertEq(checker1, YELLOW);
         assertEq(checker2, BLUE);
         // 4
         _challenge(bob, eve, FEE);
-        (checker1, checker2) = IMetadata(metadata).getCheckers(gameId);
+        (checker1, checker2) = IGenerator(generator).getCheckers(gameId);
         assertEq(checker1, RED);
         assertEq(checker2, BLUE);
         // 5
         _challenge(bob, eve, FEE);
-        (checker1, checker2) = IMetadata(metadata).getCheckers(gameId);
+        (checker1, checker2) = IGenerator(generator).getCheckers(gameId);
         assertEq(checker1, YELLOW);
         assertEq(checker2, RED);
         // 6
         _challenge(bob, eve, FEE);
-        (checker1, checker2) = IMetadata(metadata).getCheckers(gameId);
+        (checker1, checker2) = IGenerator(generator).getCheckers(gameId);
         assertEq(checker1, BLUE);
         assertEq(checker2, YELLOW);
     }
@@ -495,10 +495,10 @@ contract ConnectorsTest is Test {
     }
 
     function printBoard() public view {
-        uint256 x = 1;
-        uint256 y = 1;
-        for (uint256 i; i < ROW; ++i) {
-            for (uint256 j; j < COL; ++j) {
+        uint8 x = 1;
+        uint8 y = 1;
+        for (uint8 i; i < ROW; ++i) {
+            for (uint8 j; j < COL; ++j) {
                 console.log(x, y, board[i][j]);
                 ++y;
             }
@@ -507,7 +507,7 @@ contract ConnectorsTest is Test {
         }
     }
 
-    function _challenge(address _sender, address _opponent, uint256 _fee) internal prank(_sender) {
+    function _challenge(address _sender, address _opponent, uint64 _fee) internal prank(_sender) {
         connectors.challenge{value: _fee}(_opponent);
         _setGame();
         _setState(gameId);
@@ -517,7 +517,7 @@ contract ConnectorsTest is Test {
         address _sender,
         uint256 _gameId,
         uint8 _col,
-        uint256 _fee
+        uint64 _fee
     ) internal prank(_sender) {
         connectors.begin{value: _fee}(_gameId, _col);
         _setState(gameId);

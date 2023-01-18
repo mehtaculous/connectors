@@ -3,7 +3,7 @@ pragma solidity 0.8.13;
 
 import {COL, ROW, PLAYER_1, PLAYER_2, State} from "src/interfaces/IConnectors.sol";
 
-interface IMetadata {
+interface IGenerator {
     function BLUE() external view returns (string memory);
 
     function RED() external view returns (string memory);

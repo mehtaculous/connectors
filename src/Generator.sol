@@ -2,9 +2,9 @@
 pragma solidity 0.8.13;
 
 import "@openzeppelin/contracts/utils/Strings.sol";
-import "src/interfaces/IMetadata.sol";
+import "src/interfaces/IGenerator.sol";
 
-contract Metadata is IMetadata {
+contract Generator is IGenerator {
     using Strings for uint256;
     string public constant BLUE = "#29335c";
     string public constant RED = "#DB2B39";

@@ -10,7 +10,7 @@ Just a friendly on-chain game of Connect Four. Your move anon.
 > Creates a new game and mints an empty game board
 
 - Challenge anyone to a game of Connect Four.
-- Both players are required to pay a fee of **.0420** ETH to play.
+- Both players are required to pay a fee of **0** ETH to play.
 - Each new game mints an ERC-721 token of an empty game board.
 - Follow along with the game on any [marketplace](https://opensea.io/collection/connectors) that supports on-chain art.
 

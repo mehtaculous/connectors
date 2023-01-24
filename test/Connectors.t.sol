@@ -30,12 +30,12 @@ contract ConnectorsTest is Test {
     uint8[COL][ROW] board;
 
     // Constants
-    uint16 constant SUPPLY = 420;
-    uint64 constant FEE = .042 ether;
-    uint256 constant BALANCE = 100 ether;
     string constant BLUE = "Blue";
     string constant RED = "Red";
     string constant YELLOW = "Yellow";
+    uint16 constant SUPPLY = 1000;
+    uint64 constant FEE = .01 ether;
+    uint256 constant BALANCE = 100 ether;
 
     // Errors
     bytes NOT_OWNER_ERROR = bytes("Ownable: caller is not the owner");
@@ -82,13 +82,12 @@ contract ConnectorsTest is Test {
     function testChallengeSuccess() public {
         // execute
         _challenge(bob, eve, FEE);
-        connectors.tokenURI(gameId);
         // assert
         assertEq(gameId, 1);
         assertEq(player1, bob);
         assertEq(player2, eve);
         assertEq(turn, PLAYER_2);
-        assertEq(uint8(state), uint8(State.INACTIVE));
+        assertEq(uint8(state), uint8(State.ACTIVE));
         assertEq(bob.balance, BALANCE - FEE);
         assertEq(address(connectors).balance, FEE);
         assertEq(connectors.ownerOf(gameId), address(connectors));
@@ -117,86 +116,25 @@ contract ConnectorsTest is Test {
         _challenge(bob, eve, FEE - 1);
     }
 
-    /// =================
-    /// ===== BEGIN =====
-    /// =================
-    function testBeginSuccess(uint8 _col) public {
-        // setup
-        testChallengeSuccess();
-        _col = _boundCol(_col, 0, COL);
-        // execute
-        _begin(eve, gameId, _col, FEE);
-        connectors.tokenURI(gameId);
-        // assert
-        assertEq(board[row][col], PLAYER_2);
-        assertEq(moves, 1);
-        assertEq(turn, PLAYER_1);
-        assertEq(uint8(state), uint8(State.ACTIVE));
-        assertEq(eve.balance, BALANCE - FEE);
-        assertEq(address(connectors).balance, FEE * 2);
-    }
-
-    function testBeginRevertInvalidGame(uint8 _col) public {
-        // setup
-        testChallengeSuccess();
-        _col = _boundCol(_col, 0, COL);
-        // revert
-        vm.expectRevert(INVALID_GAME_ERROR);
-        // execute
-        _begin(eve, ++gameId, _col, FEE);
-    }
-
-    function testBeginRevertInvalidState(uint8 _col) public {
-        // setup
-        testBeginSuccess(_col);
-        _col = _boundCol(_col, 0, COL);
-        // revert
-        vm.expectRevert(INVALID_STATE_ERROR);
-        // execute
-        _begin(eve, gameId, _col, FEE);
-    }
-
-    function testBeginRevertNotAuthorized(uint8 _col) public {
-        // setup
-        testChallengeSuccess();
-        _col = _boundCol(_col, 0, COL);
-        // revert
-        vm.expectRevert(NOT_AUTHORIZED_ERROR);
-        // execute
-        _begin(bob, gameId, _col, FEE);
-    }
-
-    function testBeginRevertInvalidPayment(uint8 _col) public {
-        // setup
-        testChallengeSuccess();
-        _col = _boundCol(_col, 0, COL);
-        // revert
-        vm.expectRevert(INVALID_PAYMENT_ERROR);
-        // execute
-        _begin(eve, gameId, _col, FEE - 1);
-    }
-
     /// ================
     /// ===== MOVE =====
     /// ================
-    function testMoveSuccess() public {
+    function testMoveSuccess(uint8 _col) public {
         // setup
-        _challenge(bob, eve, FEE);
-        _begin(eve, gameId, col, FEE);
+        testChallengeSuccess();
+        _col = _boundCol(_col, 0, COL);
         // execute
-        _move(bob, gameId, col + 1);
-        connectors.tokenURI(gameId);
+        _move(eve, gameId, _col);
         // assert
-        assertEq(board[row][col], PLAYER_1);
-        assertEq(turn, PLAYER_2);
-        assertEq(moves, 2);
+        assertEq(board[row][col], PLAYER_2);
+        assertEq(turn, PLAYER_1);
+        assertEq(moves, 1);
     }
 
     function testMoveRevertInvalidGame(uint8 _col) public {
         // setup
-        testBeginSuccess(_col);
+        testMoveSuccess(_col);
         _col = _boundCol(_col, 0, COL);
-        console.log(connectors.totalSupply());
         // revert
         vm.expectRevert(INVALID_GAME_ERROR);
         // execute
@@ -205,7 +143,7 @@ contract ConnectorsTest is Test {
 
     function testMoveRevertInvalidState(uint8 _col) public {
         // setup
-        testChallengeSuccess();
+        testHorizontal();
         _col = _boundCol(_col, 0, COL);
         // revert
         vm.expectRevert(INVALID_STATE_ERROR);
@@ -215,7 +153,7 @@ contract ConnectorsTest is Test {
 
     function testMoveRevertNotAuthorized(uint8 _col) public {
         // setup
-        testBeginSuccess(_col);
+        testMoveSuccess(_col);
         _col = _boundCol(_col, 0, COL);
         // revert
         vm.expectRevert(NOT_AUTHORIZED_ERROR);
@@ -225,7 +163,7 @@ contract ConnectorsTest is Test {
 
     function testMoveRevertColOutOfBounds(uint8 _col) public {
         // setup
-        testBeginSuccess(_col);
+        testMoveSuccess(_col);
         // revert
         vm.expectRevert();
         // execute
@@ -234,7 +172,7 @@ contract ConnectorsTest is Test {
 
     function testMoveRevertInvalidMove(uint8 _col) public {
         // setup
-        testBeginSuccess(_col);
+        testMoveSuccess(_col);
         _move(bob, gameId, col);
         _move(eve, gameId, col);
         _move(bob, gameId, col);
@@ -280,19 +218,19 @@ contract ConnectorsTest is Test {
     /// ====================
     function testWithdraw(uint8 _col) public {
         // setup
-        testBeginSuccess(_col);
+        testMoveSuccess(_col);
         // execute
         _withdraw(address(this), payable(address(this)));
         // assert
-        assertEq(address(this).balance, BALANCE + (FEE * 2));
+        assertEq(address(this).balance, BALANCE + FEE);
     }
 
     /// =====================
     /// ===== TOKEN URI =====
     /// =====================
-    function testTokenURI() public {
+    function testTokenURI(uint8 _col) public {
         // setup
-        testMoveSuccess();
+        testMoveSuccess(_col);
         // execute
         connectors.tokenURI(gameId);
     }
@@ -339,7 +277,7 @@ contract ConnectorsTest is Test {
     function testHorizontal() public {
         // setup
         _challenge(bob, eve, FEE);
-        _begin(eve, gameId, 0, FEE);
+        _move(eve, gameId, 0);
         _move(bob, gameId, 0);
         _move(eve, gameId, 1);
         _move(bob, gameId, 0);
@@ -358,7 +296,7 @@ contract ConnectorsTest is Test {
     function testVertical() public {
         // setup
         _challenge(bob, eve, FEE);
-        _begin(eve, gameId, 0, FEE);
+        _move(eve, gameId, 0);
         _move(bob, gameId, 1);
         _move(eve, gameId, 0);
         _move(bob, gameId, 2);
@@ -377,7 +315,7 @@ contract ConnectorsTest is Test {
     function testAscending() public {
         // setup
         _challenge(bob, eve, FEE);
-        _begin(eve, gameId, 0, FEE);
+        _move(eve, gameId, 0);
         _move(bob, gameId, 1);
         _move(eve, gameId, 1);
         _move(bob, gameId, 2);
@@ -402,7 +340,7 @@ contract ConnectorsTest is Test {
     function testDescending() public {
         // setup
         _challenge(bob, eve, FEE);
-        _begin(eve, gameId, 0, FEE);
+        _move(eve, gameId, 0);
         _move(bob, gameId, 0);
         _move(eve, gameId, 0);
         _move(bob, gameId, 1);
@@ -428,7 +366,7 @@ contract ConnectorsTest is Test {
     function testDraw() public {
         // setup
         _challenge(bob, eve, FEE);
-        _begin(eve, gameId, 0, FEE);
+        _move(eve, gameId, 0);
         _move(bob, gameId, 0);
         _move(eve, gameId, 0);
         _move(bob, gameId, 0);
@@ -485,7 +423,7 @@ contract ConnectorsTest is Test {
 
     function simulateGame(address _player1, address _player2) public {
         _challenge(_player1, _player2, FEE);
-        _begin(_player2, gameId, 0, FEE);
+        _move(_player2, gameId, 0);
         _move(_player1, gameId, 0);
         _move(_player2, gameId, 1);
         _move(_player1, gameId, 0);
@@ -511,17 +449,6 @@ contract ConnectorsTest is Test {
         connectors.challenge{value: _fee}(_opponent);
         _setGame();
         _setState(gameId);
-    }
-
-    function _begin(
-        address _sender,
-        uint256 _gameId,
-        uint8 _col,
-        uint64 _fee
-    ) internal prank(_sender) {
-        connectors.begin{value: _fee}(_gameId, _col);
-        _setState(gameId);
-        if (row < ROW) _setBoard(gameId, row);
     }
 
     function _move(address _sender, uint256 _gameId, uint8 _col) internal prank(_sender) {

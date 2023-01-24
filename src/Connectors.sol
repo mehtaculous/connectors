@@ -30,13 +30,13 @@ contract Connectors is IConnectors, ERC721, ERC721Holder, Ownable {
     /// @dev Interface identifier for royalty standard
     bytes4 constant _INTERFACE_ID_ERC2981 = 0x2a55205a;
     /// @notice Maximum supply of NFTs
-    uint16 public constant MAX_SUPPLY = 420;
+    uint16 public constant MAX_SUPPLY = 1000;
     /// @notice Address of Generator contract
     address public immutable generator;
     /// @notice Current supply of NFTs
     uint16 public totalSupply;
-    /// @notice Ether amount required to play (per player)
-    uint64 public fee = 0.0420 ether;
+    /// @notice Ether amount required to challenge a player
+    uint64 public fee = 0.01 ether;
     /// @notice Mapping of game ID to game info
     mapping(uint256 => Game) public games;
 
@@ -50,7 +50,7 @@ contract Connectors is IConnectors, ERC721, ERC721Holder, Ownable {
     /// @param _opponent Address of opponent
     function challenge(address _opponent) external payable {
         // Reverts if caller is also the opponent
-        if (msg.sender == _opponent) revert InvalidMatchup();
+        if (msg.sender == _opponent || msg.sender == address(0)) revert InvalidMatchup();
         // Reverts if max supply has been minted
         if (totalSupply == MAX_SUPPLY) revert InsufficientSupply();
         // Reverts if payment amount is incorrect
@@ -61,38 +61,13 @@ contract Connectors is IConnectors, ERC721, ERC721Holder, Ownable {
         game.player1 = msg.sender;
         game.player2 = _opponent;
         game.turn = PLAYER_2;
+        game.state = State.ACTIVE;
 
         // Mints new board to this contract
         _safeMint(address(this), totalSupply);
 
         // Emits event for challenging opponent
         emit Challenge(totalSupply, msg.sender, _opponent);
-    }
-
-    /// @notice Activates new game and executes first move on board
-    /// @dev Column numbers are zero-indexed
-    /// @param _gameId ID of the game
-    /// @param _col Value of column placement on board (0-6)
-    function begin(uint256 _gameId, uint8 _col) external payable {
-        // Reverts if game does not exist
-        if (_gameId == 0 || _gameId > totalSupply) revert InvalidGame();
-        Game storage game = games[_gameId];
-        uint8 playerId = _getPlayerId(game, msg.sender);
-        // Reverts if game state is not Inactive
-        if (game.state != State.INACTIVE) revert InvalidState();
-        // Reverts if caller is not authorized to execute move
-        if (game.turn != playerId) revert NotAuthorized();
-        // Reverts if payment amount is incorrect
-        if (msg.value != fee) revert InvalidPayment();
-
-        // Sets game state to Active
-        game.state = State.ACTIVE;
-
-        // Emits event for beginning a new game
-        emit Begin(_gameId, msg.sender, game.state);
-
-        // Executes first move on board
-        move(_gameId, _col);
     }
 
     /// @notice Executes next placement on active board
@@ -104,14 +79,14 @@ contract Connectors is IConnectors, ERC721, ERC721Holder, Ownable {
         if (_gameId == 0 || _gameId > totalSupply) revert InvalidGame();
         Game storage game = games[_gameId];
         uint8[COL][ROW] storage board = game.board;
-        uint8 playerId = _getPlayerId(game, msg.sender);
-        uint8 row = getNextRow(board, _col);
         // Reverts if game state is not Active
         if (game.state != State.ACTIVE) revert InvalidState();
         // Reverts if caller is not authorized to execute move
+        uint8 playerId = _getPlayerId(game, msg.sender);
         if (game.turn != playerId) revert NotAuthorized();
         // Reverts if column is fully occupied
-        if (board[row][_col] != 0) revert InvalidMove();
+        uint8 row = getNextRow(board, _col);
+        if (row == ROW) revert InvalidMove();
 
         // Increments total number of moves made
         ++game.moves;
@@ -224,13 +199,13 @@ contract Connectors is IConnectors, ERC721, ERC721Holder, Ownable {
     function getNextRow(uint8[COL][ROW] memory _board, uint8 _col) public pure returns (uint8) {
         unchecked {
             for (uint8 row; row < ROW; ++row) {
-                if (_board[row][_col] == 0)  {
+                if (_board[row][_col] == 0) {
                     return row;
                 }
             }
         }
 
-        return 0;
+        return ROW;
     }
 
     /// @dev Sets game as success and transfers connector to winner
@@ -444,7 +419,9 @@ contract Connectors is IConnectors, ERC721, ERC721Holder, Ownable {
     ) internal view returns (string memory) {
         string memory player1 = uint160(_player1).toHexString(20);
         string memory player2 = uint160(_player2).toHexString(20);
-        (string memory checker1, string memory checker2) = IGenerator(generator).getCheckers(_gameId);
+        (string memory checker1, string memory checker2) = IGenerator(generator).getCheckers(
+            _gameId
+        );
 
         return
             string(

@@ -7,32 +7,27 @@ Just a friendly on-chain game of Connect Four. Your move anon.
 
 ### `Challenge`
 
-> Creates a new game and mints an empty game board
+> Challenges opponent to a new game and mints an empty game board
 
 - Challenge anyone to a game of Connect Four.
-- Both players are required to pay a fee of **.0420** ETH to play.
+- The fee to challenge an opponent is **.01** ETH.
 - Each new game mints an ERC-721 token of an empty game board.
+- Total supply of game boards is capped at **1000**.
 - Follow along with the game on any [marketplace](https://opensea.io/collection/connectors) that supports on-chain art.
 
-### `Begin`
-
-> Activates a new game and executes the first move on the game board
-
-- Opponents must first begin the game before any moves can be made.
-- Each board consists of **6** Rows and **7** Columns that are *zero-indexed*.
-- The `row` values range from **0 - 5**.
-- The `col` values range from **0 - 6**.
 
 ### `Move`
 
-> Executes next placement on an active board
+> Executes next placement on the game board
 
+- The opponent makes the first move.
+- Each board **7** Columns that are *zero-indexed*.
+- The `col` values range from **0 - 6**.
 - There is a maximum number of **42** moves per game.
 - Every move dynamically updates the metadata and SVG image of the NFT on-chain and in real time.
 - Players can win by getting **4** in a row *horizontally*, *vertically* or *diagonally*.
-- When a player wins, they are transferred the winning game board.
-- If the game ends in a draw, the NFT will remain with the smart contract.
-- Total supply is capped at **420**.
+- Winning player is transferred the final game board.
+- If the game ends in a draw, the NFT remains with the smart contract.
 
 
 ### Mainnet Contracts
@@ -56,12 +51,11 @@ Just a friendly on-chain game of Connect Four. Your move anon.
 | Connectors.sol                         |                 |        |        |         |         |
 |----------------------------------------|-----------------|--------|--------|---------|---------|
 | Deployment Cost                        | Deployment Size |        |        |         |         |
-| 4156331                                | 20851           |        |        |         |         |
+| 4080837                                | 20474           |        |        |         |         |
 | Function Name                          | min             | avg    | median | max     | # calls |
-| begin                                  | 575             | 52987  | 53658  | 53658   | 438     |
-| challenge                              | 420             | 85117  | 94990  | 101790  | 868     |
-| getColumn                              | 14570           | 14577  | 14570  | 26570   | 3045    |
-| move                                   | 624             | 33963  | 38502  | 85664   | 2607    |
-| setFee                                 | 2619            | 4108   | 4108   | 5598    | 2       |
-| tokenURI                               | 550614          | 628149 | 579508 | 1368793 | 27      |
-| withdraw                               | 7498            | 7498   | 7498   | 7498    | 1       |
+| challenge                              | 440             | 85079  | 95038  | 101838  | 2023    |
+| getColumn                              | 14570           | 14571  | 14570  | 26570   | 7104    |
+| move                                   | 624             | 36188  | 38455  | 85491   | 7104    |
+| setFee                                 | 2554            | 4043   | 4043   | 5533    | 2       |
+| tokenURI                               | 576963          | 819771 | 723289 | 1368793 | 7       |
+| withdraw                               | 7520            | 7520   | 7520   | 7520    | 1       |

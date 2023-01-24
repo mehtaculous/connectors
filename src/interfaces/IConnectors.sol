@@ -36,8 +36,6 @@ interface IConnectors {
 
     event Challenge(uint256 indexed _gameId, address indexed _player1, address indexed _player2);
 
-    event Begin(uint256 indexed _gameId, address indexed _player2, State indexed _state);
-
     event Move(
         uint256 indexed _gameId,
         address indexed _player,
@@ -56,8 +54,6 @@ interface IConnectors {
     function MAX_SUPPLY() external view returns (uint16);
 
     function challenge(address _opponent) external payable;
-
-    function begin(uint256 _gameId, uint8 _col) external payable;
 
     function fee() external view returns (uint64);
 

@@ -33,7 +33,7 @@ contract ConnectorsTest is Test {
     string constant BLUE = "Blue";
     string constant RED = "Red";
     string constant YELLOW = "Yellow";
-    uint16 constant SUPPLY = 1000;
+    uint16 constant SUPPLY = 999;
     uint64 constant FEE = .01 ether;
     uint256 constant BALANCE = 100 ether;
 

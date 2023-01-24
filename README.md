@@ -12,7 +12,7 @@ Just a friendly on-chain game of Connect Four. Your move anon.
 - Challenge anyone to a game of Connect Four.
 - The fee to challenge an opponent is **.01** ETH.
 - Each new game mints an ERC-721 token of an empty game board.
-- Total supply of game boards is capped at **1000**.
+- Total supply of game boards is capped at **999**.
 - Follow along with the game on any [marketplace](https://opensea.io/collection/connectors) that supports on-chain art.
 
 

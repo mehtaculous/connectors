@@ -30,12 +30,12 @@ contract Connectors is IConnectors, ERC721, ERC721Holder, Ownable {
     /// @dev Interface identifier for royalty standard
     bytes4 constant _INTERFACE_ID_ERC2981 = 0x2a55205a;
     /// @notice Maximum supply of NFTs
-    uint16 public constant MAX_SUPPLY = 1000;
+    uint16 public constant MAX_SUPPLY = 999;
     /// @notice Address of Generator contract
     address public immutable generator;
     /// @notice Current supply of NFTs
     uint16 public totalSupply;
-    /// @notice Ether amount required to challenge a player
+    /// @notice Ether amount required to create new game
     uint64 public fee = 0.01 ether;
     /// @notice Mapping of game ID to game info
     mapping(uint256 => Game) public games;
@@ -46,7 +46,6 @@ contract Connectors is IConnectors, ERC721, ERC721Holder, Ownable {
     }
 
     /// @notice Creates new game and mints empty game board
-    /// @dev Game can only become active once opponent calls begin
     /// @param _opponent Address of opponent
     function challenge(address _opponent) external payable {
         // Reverts if caller is also the opponent
@@ -70,7 +69,7 @@ contract Connectors is IConnectors, ERC721, ERC721Holder, Ownable {
         emit Challenge(totalSupply, msg.sender, _opponent);
     }
 
-    /// @notice Executes next placement on active board
+    /// @notice Executes next placement on game board
     /// @dev Column numbers are zero-indexed
     /// @param _gameId ID of the game
     /// @param _col Value of column placement on board (0-6)

@@ -20,13 +20,13 @@ Just a friendly on-chain game of Connect Four. Your move anon.
 
 > Executes next placement on the game board
 
-- The opponent makes the first move.
-- Each board **7** Columns that are *zero-indexed*.
+- Opponent makes the first move.
+- Each board consists of **7** Columns that are *zero-indexed*.
 - The `col` values range from **0 - 6**.
 - There is a maximum number of **42** moves per game.
 - Every move dynamically updates the metadata and SVG image of the NFT on-chain and in real time.
 - Players can win by getting **4** in a row *horizontally*, *vertically* or *diagonally*.
-- Winning player is transferred the final game board.
+- Winning player is transferred the final game board NFT.
 - If the game ends in a draw, the NFT remains with the smart contract.
 
 

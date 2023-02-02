@@ -70,9 +70,8 @@ contract Connectors is IConnectors, ERC721, ERC721Holder, Ownable {
     }
 
     /// @notice Executes next placement on game board
-    /// @dev Column numbers are zero-indexed
     /// @param _gameId ID of the game
-    /// @param _col Value of column placement on board (0-6)
+    /// @param _col Value of column placement on board (1-7)
     function move(uint256 _gameId, uint8 _col) public returns (bool result) {
         // Reverts if game does not exist
         if (_gameId == 0 || _gameId > totalSupply) revert InvalidGame();
@@ -83,8 +82,10 @@ contract Connectors is IConnectors, ERC721, ERC721Holder, Ownable {
         // Reverts if caller is not authorized to execute move
         uint8 playerId = _getPlayerId(game, msg.sender);
         if (game.turn != playerId) revert NotAuthorized();
+        // Reverts if column value is zero
+        if (_col == 0) revert InvalidColumn();
         // Reverts if column is fully occupied
-        uint8 row = getNextRow(board, _col);
+        uint8 row = getNextRow(board, --_col);
         if (row == ROW) revert InvalidMove();
 
         // Increments total number of moves made
@@ -383,9 +384,9 @@ contract Connectors is IConnectors, ERC721, ERC721Holder, Ownable {
         }
         string memory latest = string.concat(
             "(",
-            _game.row.toString(),
+            (_game.row + 1).toString(),
             ", ",
-            _game.col.toString(),
+            (_game.col + 1).toString(),
             ")"
         );
 

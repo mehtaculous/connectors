@@ -21,12 +21,11 @@ Just a friendly on-chain game of Connect Four. Your move anon.
 > Executes next placement on the game board
 
 - Opponent makes the first move.
-- Each board consists of **7** Columns that are *zero-indexed*.
-- The `col` values range from **0 - 6**.
+- Each board consists of **7** Columns that range from **1 - 7**.
 - There is a maximum number of **42** moves per game.
 - Every move dynamically updates the metadata and SVG image of the NFT on-chain and in real time.
 - Players can win by getting **4** in a row *horizontally*, *vertically* or *diagonally*.
-- Winning player is transferred the final game board NFT.
+- Winning player is transferred the final game board.
 - If the game ends in a draw, the NFT remains with the smart contract.
 
 
@@ -51,11 +50,11 @@ Just a friendly on-chain game of Connect Four. Your move anon.
 | Connectors.sol                         |                 |        |        |         |         |
 |----------------------------------------|-----------------|--------|--------|---------|---------|
 | Deployment Cost                        | Deployment Size |        |        |         |         |
-| 4080837                                | 20474           |        |        |         |         |
+| 4106868                                | 20604           |        |        |         |         |
 | Function Name                          | min             | avg    | median | max     | # calls |
-| challenge                              | 440             | 85079  | 95038  | 101838  | 2023    |
-| getColumn                              | 14570           | 14571  | 14570  | 26570   | 7104    |
-| move                                   | 624             | 36188  | 38455  | 85491   | 7104    |
+| challenge                              | 440             | 85088  | 95038  | 101838  | 2022    |
+| getColumn                              | 14570           | 14571  | 14570  | 26570   | 7099    |
+| move                                   | 624             | 36294  | 38567  | 85580   | 7099    |
 | setFee                                 | 2554            | 4043   | 4043   | 5533    | 2       |
-| tokenURI                               | 576963          | 819771 | 723289 | 1368793 | 7       |
+| tokenURI                               | 587267          | 821416 | 723491 | 1368995 | 7       |
 | withdraw                               | 7520            | 7520   | 7520   | 7520    | 1       |

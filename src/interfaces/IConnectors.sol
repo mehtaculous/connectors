@@ -26,6 +26,7 @@ struct Game {
 
 interface IConnectors {
     error InsufficientSupply();
+    error InvalidColumn();
     error InvalidGame();
     error InvalidMatchup();
     error InvalidMove();

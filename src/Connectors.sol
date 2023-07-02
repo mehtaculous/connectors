@@ -161,7 +161,8 @@ contract Connectors is IConnectors, ERC721, ERC721Holder, Ownable {
         string memory name = (game.state == State.SUCCESS)
             ? string.concat("Connector #", _tokenId.toString())
             : string.concat("Game #", _tokenId.toString());
-        string memory description = "Just a friendly on-chain game of Connect Four. Your move anon.";
+        string
+            memory description = "Just a friendly on-chain game of Connect Four. Your move anon.";
         string memory gameTraits = _generateGameTraits(game);
         string memory playerTraits = _generatePlayerTraits(_tokenId, player1, player2);
         string memory image = Base64.encode(
@@ -175,17 +176,17 @@ contract Connectors is IConnectors, ERC721, ERC721Holder, Ownable {
                     abi.encodePacked(
                         string.concat(
                             '{"name":"',
-                                name,
+                            name,
                             '",',
                             '"description":"',
-                                description,
+                            description,
                             '",',
                             '"image": "data:image/svg+xml;base64,',
-                                image,
+                            image,
                             '",',
                             '"attributes": [',
-                                playerTraits,
-                                gameTraits,
+                            playerTraits,
+                            gameTraits,
                             "]}"
                         )
                     )
@@ -394,18 +395,18 @@ contract Connectors is IConnectors, ERC721, ERC721Holder, Ownable {
             string(
                 abi.encodePacked(
                     '{"trait_type":"Latest", "value":"',
-                        latest,
+                    latest,
                     '"},',
                     '{"trait_type":"Moves", "value":"',
-                        moves,
+                    moves,
                     '"},',
                     '{"trait_type":"Status", "value":"',
-                        status,
+                    status,
                     '"},',
                     '{"trait_type":"',
-                        label,
+                    label,
                     '", "value":"',
-                        turn,
+                    turn,
                     '"}'
                 )
             );
@@ -427,14 +428,14 @@ contract Connectors is IConnectors, ERC721, ERC721Holder, Ownable {
             string(
                 abi.encodePacked(
                     '{"trait_type":"',
-                        checker1,
+                    checker1,
                     '", "value":"',
-                        player1,
+                    player1,
                     '"},',
                     '{"trait_type":"',
-                        checker2,
+                    checker2,
                     '", "value":"',
-                        player2,
+                    player2,
                     '"},'
                 )
             );

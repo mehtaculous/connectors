@@ -96,7 +96,8 @@ contract Generator is IGenerator {
         cell[5] = secs;
         cell[6] = "' begin='2s' fill='freeze'></animate></circle>";
 
-        return string(abi.encodePacked(cell[0], cell[1], cell[2], cell[3], cell[4], cell[5], cell[6]));
+        return
+            string(abi.encodePacked(cell[0], cell[1], cell[2], cell[3], cell[4], cell[5], cell[6]));
     }
 
     function _staticCell(
